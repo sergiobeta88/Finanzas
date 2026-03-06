@@ -1,0 +1,2270 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#2c5282"/>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="">
+    <link rel="manifest" id="manifest-placeholder">
+    <title>Gestión de Finanzas Personales V2.1</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .custom-loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 24px; height: 24px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 0%{transform:rotate(0deg)} 100%{transform:rotate(360deg)} }
+        #notification-bar {
+            position: fixed; top: 0; left: 50%;
+            transform: translateX(-50%); z-index: 100;
+            padding: 1rem 2rem;
+            border-radius: 0 0 0.5rem 0.5rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+        }
+        .notification-hidden { transform: translateY(-100%) translateX(-50%); opacity: 0; }
+        
+        /* Indicador de sincronización */
+        #sync-indicator {
+            position: fixed; bottom: 16px; right: 16px;
+            z-index: 200; display: flex; align-items: center; gap: 8px;
+            background: white; border-radius: 999px;
+            padding: 8px 16px; box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+            font-size: 13px; font-weight: 600;
+            transition: opacity 0.4s;
+        }
+        #sync-indicator.hidden { opacity: 0; pointer-events: none; }
+        #sync-dot { width: 10px; height: 10px; border-radius: 50%; background: #f59e0b; }
+        #sync-dot.ok { background: #22c55e; }
+        #sync-dot.error { background: #ef4444; }
+        #sync-dot.loading { background: #3b82f6; animation: pulse 1s infinite; }
+        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+        /* Overlay de carga inicial */
+        #loading-overlay {
+            position: fixed; inset: 0; background: rgba(255,255,255,0.95);
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            z-index: 1000; gap: 16px;
+        }
+        #loading-overlay.hidden { display: none; }
+    </style>
+</head>
+<body class="bg-gray-100 font-sans text-gray-800">
+
+    <!-- Overlay carga inicial -->
+    <div id="loading-overlay">
+        <div class="custom-loader"></div>
+        <p class="text-gray-600 font-semibold text-lg">Cargando datos desde Google Sheets...</p>
+        <p id="loading-error" class="text-red-500 text-sm hidden max-w-sm text-center"></p>
+        <button id="loading-retry-btn" class="hidden bg-blue-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-600 transition">Reintentar</button>
+    </div>
+
+    <!-- Indicador de sincronización -->
+    <div id="sync-indicator" class="hidden">
+        <div id="sync-dot" class="loading"></div>
+        <span id="sync-text">Sincronizando...</span>
+    </div>
+
+    <div id="notification-bar" class="notification-hidden text-center text-white font-semibold text-sm"></div>
+
+    <div class="max-w-4xl mx-auto p-4 md:p-8">
+        <header class="bg-white rounded-lg shadow-xl p-4 sticky top-4 z-50">
+            <h1 class="text-3xl md:text-4xl font-extrabold text-center text-blue-800">Finanzas Personales V2.1</h1>
+            <nav id="nav-links" class="flex justify-around items-center mt-4 p-2 bg-gray-800 rounded-lg shadow-inner">
+                <button onclick="showSection('dashboard')" data-section="dashboard" class="flex-1 text-center py-2 px-1 text-xs md:text-base font-semibold text-gray-400 hover:text-white hover:bg-gray-700 transition rounded-lg bg-gray-700">Dashboard</button>
+                <button onclick="showSection('register')" data-section="register" class="flex-1 text-center py-2 px-1 text-xs md:text-base font-semibold text-gray-400 hover:text-white hover:bg-gray-700 transition rounded-lg">Registro</button>
+                <button onclick="showSection('accounts')" data-section="accounts" class="flex-1 text-center py-2 px-1 text-xs md:text-base font-semibold text-gray-400 hover:text-white hover:bg-gray-700 transition rounded-lg">Cuentas</button>
+                <button onclick="showSection('pockets')" data-section="pockets" class="flex-1 text-center py-2 px-1 text-xs md:text-base font-semibold text-gray-400 hover:text-white hover:bg-gray-700 transition rounded-lg">Bolsillos</button>
+                <button onclick="showSection('transfers')" data-section="transfers" class="flex-1 text-center py-2 px-1 text-xs md:text-base font-semibold text-gray-400 hover:text-white hover:bg-gray-700 transition rounded-lg">Transferencias</button>
+                <button onclick="showSection('credit-cards')" data-section="credit-cards" class="flex-1 text-center py-2 px-1 text-xs md:text-base font-semibold text-gray-400 hover:text-white hover:bg-gray-700 transition rounded-lg">Tarjetas</button>
+                <button onclick="showSection('automation')" data-section="automation" class="flex-1 text-center py-2 px-1 text-xs md:text-base font-semibold text-gray-400 hover:text-white hover:bg-gray-700 transition rounded-lg">Automatización</button>
+                <button onclick="showSection('help')" data-section="help" class="flex-1 text-center py-2 px-1 text-xs md:text-base font-semibold text-gray-400 hover:text-white hover:bg-gray-700 transition rounded-lg">Ayuda</button>
+            </nav>
+        </header>
+
+        <main class="mt-8">
+            <!-- Dashboard -->
+            <section id="dashboard" class="space-y-6">
+                <div class="bg-white p-4 rounded-lg shadow-xl text-center">
+                    <p id="last-modified-date" class="text-sm text-gray-500">Cargando...</p>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div class="bg-white p-6 rounded-lg shadow-xl text-center">
+                        <h2 class="text-xl font-bold text-gray-700 mb-2">Total en Cuentas</h2>
+                        <p id="total-all-accounts-balance" class="text-3xl font-extrabold text-green-600">$0</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow-xl text-center">
+                        <h2 class="text-xl font-bold text-gray-700 mb-2">Total en Bolsillos</h2>
+                        <p id="total-pockets-balance" class="text-3xl font-extrabold text-green-600">$0</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow-xl text-center">
+                        <h2 class="text-xl font-bold text-gray-700 mb-2">Total Gastos Personales</h2>
+                        <p id="total-personal-expenses-balance" class="text-3xl font-extrabold text-red-500">$0</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow-xl text-center">
+                        <h2 class="text-xl font-bold text-gray-700 mb-2">Total Bolsillos Sobregiro</h2>
+                        <p id="total-overdraft-pockets-balance" class="text-3xl font-extrabold text-yellow-600">$0</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow-xl text-center col-span-1 lg:col-span-2">
+                        <h2 class="text-xl font-bold text-gray-700 mb-2">Balance Neto Total</h2>
+                        <p id="combined-balance-monitor" class="text-3xl font-extrabold text-blue-600">$0</p>
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-xl">
+                    <h2 class="text-2xl font-bold text-gray-700 mb-4">Monitor Específico</h2>
+                    <div id="specific-account-monitor" class="text-center"></div>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-xl">
+                    <h2 class="text-2xl font-bold text-gray-700 mb-4">Comparativa de Fondos</h2>
+                    <canvas id="balanceChart" width="400" height="200"></canvas>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-xl">
+                    <h2 class="text-2xl font-bold text-gray-700 mb-4">Saldos de Cuentas</h2>
+                    <div id="all-accounts-list"></div>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-xl">
+                    <h2 class="text-2xl font-bold text-gray-700 mb-4">Saldos de Bolsillos de Ahorro</h2>
+                    <div id="savings-pockets-list"></div>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-xl">
+                    <h2 class="text-2xl font-bold text-gray-700 mb-4">Saldos de Bolsillos de Pagos</h2>
+                    <div id="payments-pockets-list"></div>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-xl">
+                    <h2 class="text-2xl font-bold text-gray-700 mb-4">Saldos de Bolsillos de Gastos Personales</h2>
+                    <div id="personal-expenses-pockets-list"></div>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-xl">
+                    <h2 class="text-2xl font-bold text-gray-700 mb-4">Saldos de Tarjetas de Crédito y Créditos Regulares</h2>
+                    <div id="credit-card-balances-list">
+                        <h3 class="text-xl font-bold text-red-500 mb-2">Tarjetas de Crédito</h3>
+                        <div id="credit-card-only-balances"></div>
+                    </div>
+                    <div id="regular-credit-balances-list" class="mt-4">
+                        <h3 class="text-xl font-bold text-red-500 mb-2">Créditos Regulares</h3>
+                        <div id="regular-credit-only-balances"></div>
+                    </div>
+                    <div id="loan-balances-list" class="mt-4">
+                        <h3 class="text-xl font-bold text-red-500 mb-2">Préstamos</h3>
+                        <div id="loan-only-balances"></div>
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-xl text-center flex flex-col md:flex-row gap-4">
+                    <button onclick="undoLastAction()" id="undo-btn" class="flex-1 bg-red-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-red-600 transition disabled:opacity-50 disabled:cursor-not-allowed">Deshacer Última Acción</button>
+                    <button onclick="redoLastAction()" id="redo-btn" class="flex-1 bg-gray-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-gray-600 transition disabled:opacity-50 disabled:cursor-not-allowed">Rehacer Última Acción</button>
+                    <button onclick="exportDataToJson()" class="flex-1 bg-yellow-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-yellow-600 transition">Exportar Datos</button>
+                    <label for="import-file-input" class="flex-1 bg-blue-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-600 transition cursor-pointer flex items-center justify-center">Importar Datos</label>
+                    <input type="file" id="import-file-input" class="hidden" accept=".json" onchange="importDataFromJson(event)">
+                </div>
+            </section>
+
+            <!-- Registro de Ingresos/Gastos -->
+            <section id="register" class="hidden bg-white p-6 rounded-lg shadow-xl">
+                <h2 class="text-2xl font-bold text-gray-700 mb-4">Registrar Movimiento ✍️</h2>
+                <form id="register-form" class="space-y-4">
+                    <div class="flex flex-col md:flex-row md:space-x-4 space-y-4 md:space-y-0">
+                        <div class="flex-1">
+                            <label for="concept" class="block text-gray-700 font-bold mb-2">Concepto</label>
+                            <input type="text" id="concept" name="concept" required class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300">
+                        </div>
+                        <div class="flex-1">
+                            <label for="date" class="block text-gray-700 font-bold mb-2">Día</label>
+                            <input type="date" id="date" name="date" required class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300">
+                        </div>
+                    </div>
+                    <div class="flex flex-col md:flex-row md:space-x-4 space-y-4 md:space-y-0">
+                        <div class="flex-1">
+                            <label for="type" class="block text-gray-700 font-bold mb-2">Tipo</label>
+                            <select id="type" name="type" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300">
+                                <option value="expense">Gasto</option>
+                                <option value="income">Ingreso</option>
+                            </select>
+                        </div>
+                        <div class="flex-1">
+                            <label for="value" class="block text-gray-700 font-bold mb-2">Valor ($)</label>
+                            <input type="text" id="value" name="value" required class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300">
+                        </div>
+                    </div>
+                    <div>
+                        <label for="afecta-cuenta" class="block text-gray-700 font-bold mb-2">Afectar Cuenta</label>
+                        <select id="afecta-cuenta" name="afecta-cuenta" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300">
+                            <option value="" selected>Seleccione una cuenta (opcional)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="afecta-bolsillo" class="block text-gray-700 font-bold mb-2">Afectar Bolsillo</label>
+                        <div class="flex items-center space-x-2">
+                            <div id="pocket-selector-wrapper" class="w-full">
+                                <select id="afecta-bolsillo" name="afecta-bolsillo" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300">
+                                    <option value="" selected>Seleccione un bolsillo (opcional)</option>
+                                </select>
+                            </div>
+                            <div id="distribution-summary-display" class="hidden w-full p-3 border rounded-lg bg-gray-50 text-sm text-gray-800 flex justify-between items-start">
+                                <div id="summary-content" class="flex-grow"></div>
+                                <button type="button" id="cancel-distribution-btn" class="text-red-500 font-bold ml-2 flex-shrink-0" title="Cancelar distribución">✕</button>
+                            </div>
+                            <button type="button" id="distribute-expense-btn" class="bg-orange-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-orange-600 transition whitespace-nowrap">Distribuir</button>
+                        </div>
+                        <input type="hidden" id="multi-pocket-data" name="multi-pocket-data">
+                    </div>
+                    <button type="submit" class="w-full bg-blue-500 text-white px-4 py-3 rounded-lg font-semibold hover:bg-blue-600 transition">Registrar</button>
+                </form>
+                <div class="mt-6 border-t pt-6">
+                    <h3 class="text-xl font-bold text-gray-700 mb-4">Historial de Movimientos</h3>
+                    <div class="flex items-center space-x-4 mb-4 bg-gray-50 p-3 rounded-lg">
+                        <label for="register-month-filter" class="text-gray-700 font-bold">Filtrar por mes:</label>
+                        <select id="register-month-filter" class="flex-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300"></select>
+                    </div>
+                    <div id="all-transactions-list" class="space-y-2"></div>
+                </div>
+            </section>
+
+            <!-- Cuentas -->
+            <section id="accounts" class="hidden bg-white p-6 rounded-lg shadow-xl">
+                <h2 class="text-2xl font-bold text-gray-700 mb-4">Administrar Cuentas 🏦</h2>
+                <form id="account-form" class="space-y-4 mb-6 p-4 bg-gray-50 rounded-lg">
+                    <div>
+                        <label for="account-name" class="block text-gray-700 font-bold mb-2">Nombre de la Cuenta</label>
+                        <input type="text" id="account-name" name="name" required class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300">
+                    </div>
+                    <div>
+                        <label for="account-initial-balance" class="block text-gray-700 font-bold mb-2">Saldo Inicial ($)</label>
+                        <input type="text" id="account-initial-balance" name="initial_balance" required class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300">
+                    </div>
+                    <div>
+                        <label for="account-type" class="block text-gray-700 font-bold mb-2">Tipo de Cuenta</label>
+                        <select id="account-type" name="type" required class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300">
+                            <option value="prestamo_account">Cuenta de Préstamo</option>
+                            <option value="anticipos">Cuenta de Anticipos</option>
+                            <option value="virtual">Cuenta Vida Real</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="w-full bg-blue-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-600 transition">Guardar Cuenta</button>
+                </form>
+                <div id="accounts-list" class="space-y-2"></div>
+            </section>
+
+            <!-- Bolsillos -->
+            <section id="pockets" class="hidden bg-white p-6 rounded-lg shadow-xl">
+                <h2 class="text-2xl font-bold text-gray-700 mb-4">Administrar Bolsillos 👛</h2>
+                <form id="pocket-form" class="space-y-4 mb-6 p-4 bg-gray-50 rounded-lg">
+                    <div>
+                        <label for="pocket-name" class="block text-gray-700 font-bold mb-2">Nombre del Bolsillo</label>
+                        <input type="text" id="pocket-name" name="name" required class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300">
+                    </div>
+                    <div>
+                        <label for="pocket-initial-balance" class="block text-gray-700 font-bold mb-2">Saldo Inicial ($)</label>
+                        <input type="text" id="pocket-initial-balance" name="initial_balance" required class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300">
+                    </div>
+                    <div>
+                        <label for="pocket-type" class="block text-gray-700 font-bold mb-2">Tipo de Bolsillo</label>
+                        <select id="pocket-type" name="type" required class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300">
+                            <option value="ahorro">Bolsillo de Ahorro</option>
+                            <option value="pagos">Bolsillo de Pagos</option>
+                            <option value="gastos-personales">Bolsillo de Gastos Personales</option>
+                            <option value="sobregiro">Bolsillo con Sobregiro</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="w-full bg-blue-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-600 transition">Guardar Bolsillo</button>
+                </form>
+                <div id="pockets-list" class="space-y-2"></div>
+            </section>
+
+            <!-- Transferencias -->
+            <section id="transfers" class="hidden bg-white p-6 rounded-lg shadow-xl">
+                <h2 class="text-2xl font-bold text-gray-700 mb-4">Transferencias 💸</h2>
+                <form id="transfer-form" class="space-y-4 p-4 bg-gray-50 rounded-lg">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label for="transfer-concept" class="block text-gray-700 font-bold mb-2">Concepto</label>
+                            <input type="text" id="transfer-concept" name="concept" required class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300" placeholder="Ej: Ahorro quincenal">
+                        </div>
+                        <div>
+                            <label for="transfer-date" class="block text-gray-700 font-bold mb-2">Fecha</label>
+                            <input type="date" id="transfer-date" name="date" required class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300">
+                        </div>
+                    </div>
+                    <div>
+                        <label for="transfer-value" class="block text-gray-700 font-bold mb-2">Valor ($)</label>
+                        <input type="text" id="transfer-value" name="value" required class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300">
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 font-bold mb-2">Origen</label>
+                        <div class="flex flex-col md:flex-row md:space-x-4 space-y-4 md:space-y-0">
+                            <select id="transfer-source-account" name="sourceAccount" class="flex-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300">
+                                <option value="" disabled selected>Seleccione una cuenta</option>
+                            </select>
+                            <select id="transfer-source-pocket" name="sourcePocket" class="flex-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300">
+                                <option value="" disabled selected>Seleccione un bolsillo</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 font-bold mb-2">Destino</label>
+                        <div class="flex flex-col md:flex-row md:space-x-4 space-y-4 md:space-y-0">
+                            <select id="transfer-destination-account" name="destinationAccount" class="flex-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300">
+                                <option value="" disabled selected>Seleccione una cuenta</option>
+                            </select>
+                            <select id="transfer-destination-pocket" name="destinationPocket" class="flex-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300">
+                                <option value="" disabled selected>Seleccione un bolsillo</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button type="submit" class="w-full bg-blue-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-600 transition">Transferir</button>
+                </form>
+            </section>
+
+            <!-- Tarjetas de Crédito -->
+            <section id="credit-cards" class="hidden bg-white p-6 rounded-lg shadow-xl">
+                <h2 class="text-2xl font-bold text-gray-700 mb-4">Administrar Tarjetas de Crédito 💳</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                    <div class="bg-gray-100 p-4 rounded-lg shadow">
+                        <h3 class="text-xl font-bold text-gray-700 mb-2">Crear Nueva Tarjeta</h3>
+                        <form id="create-card-form" class="space-y-4">
+                            <div>
+                                <label for="new-card-name" class="block text-gray-700 font-bold mb-2">Nombre de la Tarjeta</label>
+                                <input type="text" id="new-card-name" name="name" required class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300">
+                            </div>
+                            <div>
+                                <label for="initial-debt" class="block text-gray-700 font-bold mb-2">Deuda Inicial ($)</label>
+                                <input type="text" id="initial-debt" name="initial_debt" required class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300">
+                            </div>
+                            <div>
+                                <label for="new-card-type" class="block text-gray-700 font-bold mb-2">Tipo de Tarjeta</label>
+                                <select id="new-card-type" name="type" required class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300">
+                                    <option value="tarjeta-de-credito">Tarjeta de Crédito</option>
+                                    <option value="credito-regular">Crédito Regular</option>
+                                    <option value="préstamo">Préstamo</option>
+                                </select>
+                            </div>
+                            <button type="submit" class="w-full bg-green-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-green-600 transition">Crear Tarjeta</button>
+                        </form>
+                    </div>
+                    <div class="bg-gray-100 p-4 rounded-lg shadow">
+                        <h3 class="text-xl font-bold text-gray-700 mb-2">Registrar Compra</h3>
+                        <form id="record-purchase-form" class="space-y-4">
+                            <div>
+                                <label for="purchase-card" class="block text-gray-700 font-bold mb-2">Tarjeta Usada</label>
+                                <select id="purchase-card" name="purchase_card" required class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300"></select>
+                            </div>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label for="purchase-concept" class="block text-gray-700 font-bold mb-2">Concepto</label>
+                                    <input type="text" id="purchase-concept" name="purchase_concept" required class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300">
+                                </div>
+                                <div>
+                                    <label for="purchase-date" class="block text-gray-700 font-bold mb-2">Fecha</label>
+                                    <input type="date" id="purchase-date" name="purchase_date" required class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300">
+                                </div>
+                            </div>
+                            <div class="flex items-center mt-2">
+                                <input type="checkbox" id="is-recurring-purchase" class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                                <label for="is-recurring-purchase" class="ml-2 block text-sm text-gray-900 font-bold">Compra Recurrente (Cuota Fija)</label>
+                            </div>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div id="purchase-value-wrapper">
+                                    <label for="purchase-value" class="block text-gray-700 font-bold mb-2">Valor Total ($)</label>
+                                    <input type="text" id="purchase-value" name="purchase_value" required class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300">
+                                </div>
+                                <div id="purchase-monthly-wrapper">
+                                    <label for="purchase-monthly" class="block text-gray-700 font-bold mb-2" id="label-purchase-monthly">Plazo (Meses)</label>
+                                    <input type="text" id="purchase-monthly" name="purchase_monthly" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300">
+                                </div>
+                            </div>
+                            <div>
+                                <label for="purchase-pocket" class="block text-gray-700 font-bold mb-2">Pagar cuota con bolsillo</label>
+                                <select id="purchase-pocket" name="purchase_pocket" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300">
+                                    <option value="" selected>No usar bolsillo</option>
+                                </select>
+                            </div>
+                            <button type="submit" id="record-purchase-btn" class="w-full bg-blue-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-600 transition">Registrar Compra</button>
+                        </form>
+                    </div>
+                    <div class="bg-gray-100 p-4 rounded-lg shadow">
+                        <h3 class="text-xl font-bold text-gray-700 mb-2">Registrar Abono</h3>
+                        <form id="record-payment-form" class="space-y-4">
+                            <div>
+                                <label for="payment-card" class="block text-gray-700 font-bold mb-2">Tarjeta</label>
+                                <select id="payment-card" name="payment_card" required class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300"></select>
+                            </div>
+                            <div>
+                                <label for="payment-value" class="block text-gray-700 font-bold mb-2">Valor del Abono ($)</label>
+                                <input type="text" id="payment-value" name="payment_value" required class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300">
+                            </div>
+                            <button type="submit" class="w-full bg-purple-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-purple-600 transition">Registrar Abono</button>
+                        </form>
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-xl">
+                    <h3 class="text-xl font-bold text-gray-700 mb-2">Cuotas Quincenales por Bolsillo 🗓️</h3>
+                    <p class="text-sm text-gray-600 mb-4">Monto total de las cuotas quincenales pendientes para cada bolsillo.</p>
+                    <div id="bi-weekly-pocket-summary" class="space-y-2"></div>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-xl">
+                    <h3 class="text-xl font-bold text-gray-700 mb-2">Pagar Cuotas Quincenales de Bolsillo 💰</h3>
+                    <p class="text-sm text-gray-600 mb-4">Esta rutina deduce el valor acumulado de las cuotas quincenales de todos los bolsillos, sin afectar la deuda de la tarjeta.</p>
+                    <form id="pay-biweekly-pocket-form" class="space-y-4 p-4 bg-gray-50 rounded-lg">
+                        <div>
+                            <label for="biweekly-payment-month" class="block text-gray-700 font-bold mb-2">Seleccionar Mes</label>
+                            <select id="biweekly-payment-month" name="biweekly_payment_month" required class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300"></select>
+                        </div>
+                        <div>
+                            <label for="biweekly-payment-fortnight" class="block text-gray-700 font-bold mb-2">Seleccionar Quincena</label>
+                            <select id="biweekly-payment-fortnight" name="biweekly_payment_fortnight" required class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300">
+                                <option value="first" selected>Primera Quincena</option>
+                                <option value="second">Segunda Quincena</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="w-full bg-blue-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-600 transition">Deducir Quincena de Todos los Bolsillos</button>
+                    </form>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-xl">
+                    <h3 class="text-xl font-bold text-gray-700 mb-2">Provisionar Cuota a Bolsillo ➡️</h3>
+                    <p class="text-sm text-gray-600 mb-4">Esta rutina toma el total de la cuota quincenal de una tarjeta y lo aprovisiona en un bolsillo para guardar el dinero de los pagos. Esto aumenta el saldo del bolsillo sin descontar de ninguna cuenta.</p>
+                    <form id="transfer-installment-form" class="space-y-4 p-4 bg-gray-50 rounded-lg">
+                        <div>
+                            <label for="transfer-installment-card" class="block text-gray-700 font-bold mb-2">Tarjeta de Crédito</label>
+                            <select id="transfer-installment-card" name="transfer_installment_card" required class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300"></select>
+                        </div>
+                        <div>
+                            <label for="transfer-installment-month" class="block text-gray-700 font-bold mb-2">Seleccionar Mes</label>
+                            <select id="transfer-installment-month" name="transfer_installment_month" required class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300"></select>
+                        </div>
+                        <div>
+                            <label for="transfer-installment-fortnight" class="block text-gray-700 font-bold mb-2">Seleccionar Quincena</label>
+                            <select id="transfer-installment-fortnight" name="transfer_installment_fortnight" required class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300">
+                                <option value="first" selected>Primera Quincena</option>
+                                <option value="second">Segunda Quincena</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="transfer-installment-destination" class="block text-gray-700 font-bold mb-2">Bolsillo de Destino</label>
+                            <select id="transfer-installment-destination" name="transfer_installment_destination" required class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300"></select>
+                        </div>
+                        <button type="submit" class="w-full bg-purple-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-purple-600 transition">Provisionar Cuota Quincenal</button>
+                    </form>
+                </div>
+                <div id="credit-cards-list"></div>
+            </section>
+
+            <!-- Automatización -->
+            <section id="automation" class="hidden bg-white p-6 rounded-lg shadow-xl">
+                <h2 class="text-2xl font-bold text-gray-700 mb-4">Automatización de Ahorros 🤖</h2>
+                <div class="bg-gray-100 p-4 rounded-lg shadow mb-6">
+                    <h3 class="text-xl font-bold text-gray-700 mb-2">Gestionar Presupuestos Guardados</h3>
+                    <form id="manage-budgets-form" class="space-y-2">
+                        <div class="flex items-center space-x-2">
+                            <input type="text" id="new-budget-name" placeholder="Nombre del nuevo presupuesto" class="flex-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300">
+                            <button type="button" onclick="saveNewBudget()" class="bg-blue-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-600 transition">Guardar Nuevo</button>
+                        </div>
+                        <div class="flex items-center space-x-2 mt-4">
+                            <select id="saved-budgets-select" class="flex-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300">
+                                <option value="" disabled selected>Cargar o eliminar un presupuesto</option>
+                            </select>
+                            <button type="button" onclick="loadSelectedBudget()" class="bg-green-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-green-600 transition">Cargar</button>
+                            <button type="button" onclick="deleteSelectedBudget()" class="bg-red-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-red-600 transition">Eliminar</button>
+                        </div>
+                    </form>
+                </div>
+                <p class="text-sm text-gray-600 mb-4">Define un presupuesto mensual para automatizar las transferencias a tus bolsillos.</p>
+                <form id="automation-form" class="space-y-4 mb-6 p-4 bg-gray-50 rounded-lg"></form>
+                <div id="run-automation-form-container"></div>
+            </section>
+
+            <!-- Historia -->
+            <section id="history-view" class="hidden bg-white p-6 rounded-lg shadow-xl mt-8">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 id="history-view-title" class="text-2xl font-bold text-gray-700">Historial de Transacciones</h2>
+                    <button id="history-view-back-btn" class="bg-gray-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-gray-600 transition">Volver</button>
+                </div>
+                <div class="flex items-center space-x-4 mb-4 bg-gray-50 p-3 rounded-lg">
+                    <label for="history-month-filter" class="text-gray-700 font-bold">Filtrar por mes:</label>
+                    <select id="history-month-filter" class="flex-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300"></select>
+                </div>
+                <div id="history-view-list" class="space-y-2"></div>
+            </section>
+
+            <!-- Ayuda -->
+            <section id="help" class="hidden bg-white p-6 rounded-lg shadow-xl space-y-6">
+                <h2 class="text-2xl font-bold text-gray-700 mb-4">Guía de Uso de la Herramienta</h2>
+                <div class="space-y-4">
+                    <div>
+                        <h3 class="text-xl font-semibold text-blue-700">1. Dashboard</h3>
+                        <p class="text-gray-600">Es la vista principal. Aquí encontrarás un resumen de tus finanzas, incluyendo el total en tus cuentas, bolsillos y el balance general.</p>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-semibold text-blue-700">2. Sincronización con Google Sheets</h3>
+                        <p class="text-gray-600">Los datos se guardan automáticamente en Google Sheets al realizar cualquier acción. El indicador en la esquina inferior derecha muestra el estado: 🔵 sincronizando, 🟢 guardado, 🔴 error.</p>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-semibold text-blue-700">3. Registro</h3>
+                        <p class="text-gray-600">Usa esta sección para añadir nuevos ingresos y gastos. Puedes usar el botón "Distribuir" para cubrir el monto desde varios bolsillos.</p>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-semibold text-blue-700">4. Cuentas y Bolsillos</h3>
+                        <p class="text-gray-600">Las Cuentas representan dinero real o deudas. Los Bolsillos son para organizar tu dinero para propósitos específicos.</p>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-semibold text-blue-700">5. Exportar/Importar</h3>
+                        <p class="text-gray-600">Puedes exportar todos tus datos a un archivo JSON como respaldo adicional, o importarlos si necesitas restaurar.</p>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Modales (igual que la versión original) -->
+    <div id="confirmation-modal" class="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center hidden z-50">
+        <div class="bg-white p-6 rounded-lg shadow-xl w-full max-w-sm">
+            <h3 id="modal-title" class="text-xl font-bold text-gray-700 mb-4">Confirmar Acción</h3>
+            <p id="modal-message" class="mb-6 text-gray-600">¿Estás seguro?</p>
+            <div class="flex justify-end space-x-4">
+                <button id="modal-cancel-btn" class="bg-gray-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-gray-600 transition">Cancelar</button>
+                <button id="modal-confirm-btn" class="bg-red-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-red-600 transition">Confirmar</button>
+            </div>
+        </div>
+    </div>
+    <div id="multi-pocket-modal" class="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center hidden z-50">
+        <div class="bg-white p-6 rounded-lg shadow-xl w-full max-w-lg">
+            <h3 class="text-xl font-bold text-gray-700 mb-2">Distribuir Gasto</h3>
+            <p class="mb-4">Valor total del gasto: <span id="modal-expense-total" class="font-bold"></span></p>
+            <div id="distribution-list" class="space-y-2 mb-4 max-h-48 overflow-y-auto"></div>
+            <div class="p-4 bg-gray-50 rounded-lg mb-4">
+                <div class="flex flex-col md:flex-row gap-2 items-end">
+                    <div class="flex-grow">
+                        <label for="modal-pocket-select" class="block text-sm font-bold text-gray-700">Bolsillo</label>
+                        <select id="modal-pocket-select" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300"></select>
+                    </div>
+                    <div class="flex-grow">
+                        <label for="modal-pocket-amount" class="block text-sm font-bold text-gray-700">Monto</label>
+                        <input type="text" id="modal-pocket-amount" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300">
+                    </div>
+                    <button type="button" id="modal-add-pocket-btn" class="bg-blue-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-600 transition">Añadir</button>
+                </div>
+            </div>
+            <div class="text-right font-bold mb-4">
+                <p>Monto Cubierto: <span id="modal-amount-covered" class="text-green-600">$0.00</span></p>
+                <p>Monto Restante: <span id="modal-amount-remaining" class="text-red-500">$0.00</span></p>
+            </div>
+            <div class="flex justify-end space-x-4">
+                <button id="modal-cancel-distribution-btn" type="button" class="bg-gray-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-gray-600 transition">Cancelar</button>
+                <button id="modal-confirm-distribution-btn" type="button" class="bg-green-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-green-600 transition disabled:opacity-50" disabled>Confirmar</button>
+            </div>
+        </div>
+    </div>
+    <div id="pay-monthly-installment-modal" class="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center hidden z-50">
+        <div class="bg-white p-6 rounded-lg shadow-xl w-full max-w-sm">
+            <h3 class="text-xl font-bold text-gray-700 mb-4">Pagar Cuota Mensual</h3>
+            <div class="space-y-4">
+                <p class="text-sm text-gray-600">Seleccione el periodo que desea registrar como pagado para esta tarjeta.</p>
+                <div>
+                    <label for="installment-pay-period" class="block text-gray-700 font-bold mb-2">Seleccionar Mes</label>
+                    <select id="installment-pay-period" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300"></select>
+                </div>
+                <div class="text-right pt-4 space-x-4">
+                    <button onclick="closeMonthlyPayModal()" class="bg-gray-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-gray-600 transition">Cancelar</button>
+                    <button id="monthly-installment-confirm-btn" class="bg-green-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-green-600 transition">Pagar Cuota</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="adjust-card-balance-modal" class="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center hidden z-50">
+        <div class="bg-white p-6 rounded-lg shadow-xl w-full max-w-sm">
+            <h3 class="text-xl font-bold text-gray-700 mb-4">Ajustar Saldo Manual</h3>
+            <div class="space-y-4">
+                <p class="text-sm text-gray-600">Ingrese el nuevo saldo total que desea que tenga esta tarjeta.</p>
+                <div>
+                    <label for="adjust-balance-value" class="block text-gray-700 font-bold mb-2">Nuevo Saldo ($)</label>
+                    <input type="text" id="adjust-balance-value" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300">
+                </div>
+                <div class="text-right pt-4 space-x-4">
+                    <button onclick="closeAdjustBalanceModal()" class="bg-gray-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-gray-600 transition">Cancelar</button>
+                    <button id="adjust-balance-confirm-btn" class="bg-blue-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-600 transition">Actualizar Saldo</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="edit-transaction-modal" class="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center hidden z-50">
+        <div class="bg-white p-6 rounded-lg shadow-xl w-full max-w-lg">
+            <h3 class="text-xl font-bold text-gray-700 mb-4">Editar Movimiento</h3>
+            <form id="edit-transaction-form" class="space-y-4">
+                <input type="hidden" id="edit-tx-id">
+                <input type="hidden" id="edit-tx-original-data">
+                <div>
+                    <label for="edit-concept" class="block text-gray-700 font-bold mb-2">Concepto</label>
+                    <input type="text" id="edit-concept" required class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300">
+                </div>
+                <div>
+                    <label for="edit-date" class="block text-gray-700 font-bold mb-2">Día</label>
+                    <input type="date" id="edit-date" required class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300">
+                </div>
+                <div>
+                    <label for="edit-value" class="block text-gray-700 font-bold mb-2">Valor ($)</label>
+                    <input type="text" id="edit-value" required class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300">
+                </div>
+                <div id="edit-income-expense-fields" class="hidden">
+                    <label class="block text-gray-700 font-bold mb-2">Tipo</label>
+                    <p id="edit-type-label" class="font-semibold text-lg p-2 bg-gray-100 rounded"></p>
+                    <div>
+                        <label for="edit-afecta-cuenta" class="block text-gray-700 font-bold mb-2">Afectar Cuenta (opcional)</label>
+                        <select id="edit-afecta-cuenta" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300"></select>
+                    </div>
+                    <div>
+                        <label for="edit-afecta-bolsillo" class="block text-gray-700 font-bold mb-2">Afectar Bolsillo (opcional)</label>
+                        <select id="edit-afecta-bolsillo" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300"></select>
+                    </div>
+                </div>
+                <div id="edit-transfer-fields" class="hidden">
+                    <p class="font-semibold text-lg p-2 bg-gray-100 rounded">Transferencia</p>
+                    <div>
+                        <label class="block text-gray-700 font-bold mb-2">Origen</label>
+                        <div class="flex space-x-2">
+                            <select id="edit-transfer-source-account" class="w-1/2 px-4 py-2 border rounded-lg"></select>
+                            <select id="edit-transfer-source-pocket" class="w-1/2 px-4 py-2 border rounded-lg"></select>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 font-bold mb-2">Destino</label>
+                        <div class="flex space-x-2">
+                            <select id="edit-transfer-destination-account" class="w-1/2 px-4 py-2 border rounded-lg"></select>
+                            <select id="edit-transfer-destination-pocket" class="w-1/2 px-4 py-2 border rounded-lg"></select>
+                        </div>
+                    </div>
+                </div>
+                <div id="edit-distributed-expense-fields" class="hidden">
+                    <p class="p-4 bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 rounded">Gasto Distribuido. Puede editar los campos comunes (Concepto, Fecha, Valor).</p>
+                </div>
+                <div class="flex justify-end space-x-4 mt-6">
+                    <button type="button" id="edit-modal-cancel-btn" class="bg-gray-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-gray-600 transition">Cancelar</button>
+                    <button type="submit" id="edit-modal-save-btn" class="bg-blue-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-600 transition">Guardar Cambios</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+    // ============================================================
+    // ▼▼▼  CONFIGURA AQUÍ TU URL DE GOOGLE APPS SCRIPT  ▼▼▼
+    // ============================================================
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz6bEsHOjj4Bwjk5_KF005GlT6jWMjh05bqHgegeRhKKvGUcJw-Zq0eb3mnFEIM_z3maw/exec";
+    // ============================================================
+
+    // ── CAPA DE ALMACENAMIENTO (reemplaza localStorage) ──────────
+    // Caché en memoria para velocidad
+    const _cache = {};
+
+    // Indicador visual
+    const syncIndicator = document.getElementById('sync-indicator');
+    const syncDot       = document.getElementById('sync-dot');
+    const syncText      = document.getElementById('sync-text');
+    let syncTimer = null;
+
+    const setSyncState = (state, msg) => {
+        syncIndicator.classList.remove('hidden');
+        syncDot.className = '';
+        syncDot.classList.add(state);
+        syncText.textContent = msg;
+        clearTimeout(syncTimer);
+        if (state === 'ok' || state === 'error') {
+            syncTimer = setTimeout(() => syncIndicator.classList.add('hidden'), 3000);
+        }
+    };
+
+    const Storage = {
+        async get(key) {
+            if (_cache[key] !== undefined) return _cache[key];
+            try {
+                const r = await fetch(`${SCRIPT_URL}?action=get&key=${encodeURIComponent(key)}`);
+                const json = await r.json();
+                if (json.success && json.value !== null) {
+                    try { _cache[key] = JSON.parse(json.value); }
+                    catch(e) { _cache[key] = json.value; }
+                    return _cache[key];
+                }
+                return null;
+            } catch(e) {
+                console.error('Storage.get error:', e);
+                return null;
+            }
+        },
+
+        async set(key, value) {
+            _cache[key] = value;
+            setSyncState('loading', 'Guardando...');
+            try {
+                const r = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ action: 'set', key, value: JSON.stringify(value) })
+                });
+                const json = await r.json();
+                if (json.success) {
+                    setSyncState('ok', '✓ Guardado en Sheets');
+                } else {
+                    setSyncState('error', '✗ Error al guardar');
+                }
+            } catch(e) {
+                setSyncState('error', '✗ Sin conexión');
+                console.error('Storage.set error:', e);
+            }
+        },
+
+        async getAll() {
+            setSyncState('loading', 'Cargando...');
+            try {
+                const r = await fetch(`${SCRIPT_URL}?action=getAll`);
+                const json = await r.json();
+                if (json.success) {
+                    Object.entries(json.data).forEach(([k, v]) => {
+                        try { _cache[k] = JSON.parse(v); }
+                        catch(e) { _cache[k] = v; }
+                    });
+                    setSyncState('ok', '✓ Datos cargados');
+                    return _cache;
+                }
+                setSyncState('error', '✗ Error al cargar');
+                return {};
+            } catch(e) {
+                setSyncState('error', '✗ Sin conexión');
+                throw e;
+            }
+        }
+    };
+
+    // Helpers de acceso sincrónicos (para código que no es async)
+    const getItem = (key) => _cache[key] ?? null;
+    const setItem = (key, value) => { _cache[key] = value; Storage.set(key, value); };
+
+    // ── UTILIDADES ────────────────────────────────────────────────
+    const formatNumber = (num) => {
+        if (num === null || num === undefined) return '$0.00';
+        return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 2 }).format(num);
+    };
+    const parseFormattedNumber = (str) => {
+        if (!str) return 0;
+        return parseFloat(String(str).replace(/\D/g, '')) || 0;
+    };
+    const isNewPurchase = (dateStr) => {
+        if (!dateStr) return false;
+        const pDate = new Date(dateStr + "T00:00:00");
+        const now = new Date();
+        const limitDate = new Date(pDate.getFullYear(), pDate.getMonth() + 1, 5, 23, 59, 59);
+        return now <= limitDate;
+    };
+
+    // ── EXPORTAR / IMPORTAR ───────────────────────────────────────
+    function exportDataToJson() {
+        const data = {
+            accounts:              getItem('accounts')              || [],
+            pockets:               getItem('pockets')               || [],
+            transactions:          getItem('transactions')          || [],
+            creditCards:           getItem('credit_cards')          || [],
+            savedBudgets:          getItem('saved_budgets')         || [],
+            checkedTransactions:   getItem('checkedTransactions')   || {},
+            pocketPaymentsChecked: pocketPaymentsChecked
+        };
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+        const url  = URL.createObjectURL(blob);
+        const a    = document.createElement('a');
+        a.href = url;
+        a.download = `finanzas_backup_${new Date().toISOString().split('T')[0]}.json`;
+        document.body.appendChild(a); a.click(); document.body.removeChild(a);
+        showMessage('Datos exportados con éxito.');
+    }
+    window.exportDataToJson = exportDataToJson;
+
+    async function importDataFromJson(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+            try {
+                const d = JSON.parse(e.target.result);
+                if (d.accounts && d.pockets && d.transactions && d.creditCards) {
+                    setItem('accounts',            d.accounts);
+                    setItem('pockets',             d.pockets);
+                    setItem('transactions',        d.transactions);
+                    setItem('credit_cards',        d.creditCards);
+                    if (d.savedBudgets)          setItem('saved_budgets',        d.savedBudgets);
+                    if (d.checkedTransactions)   setItem('checkedTransactions',  d.checkedTransactions);
+                    if (d.pocketPaymentsChecked) {
+                        setItem('pocketPaymentsChecked', d.pocketPaymentsChecked);
+                        pocketPaymentsChecked = d.pocketPaymentsChecked;
+                    }
+                    loadData();
+                    showMessage('Datos importados con éxito.', 'success');
+                } else {
+                    showMessage('Archivo de respaldo no válido.', 'error');
+                }
+            } catch (err) { showMessage('Error al procesar el archivo.', 'error'); }
+        };
+        reader.readAsText(file);
+    }
+    window.importDataFromJson = importDataFromJson;
+
+    // ── UI ────────────────────────────────────────────────────────
+    const sections = ['dashboard','register','accounts','pockets','transfers','credit-cards','automation','history-view','help'];
+    const monthNames = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
+    const ACCOUNT_TYPES = { prestamo_account:'Cuenta de Préstamo', anticipos:'Cuenta de Anticipos', virtual:'Cuenta Vida Real' };
+    const POCKET_TYPES  = { ahorro:'Ahorro', pagos:'Pagos', gastos_personales:'Gastos Personales', sobregiro:'Sobregiro' };
+
+    let activeAutomationBudgetId = null;
+    let confirmCallback          = null;
+    let previousSection          = 'dashboard';
+    let checkedTransactions      = {};
+    let pocketPaymentsChecked    = {};
+
+    const applyNumberFormatting = (selector) => {
+        document.querySelectorAll(selector).forEach(input => {
+            if (input.dataset.formatted) return;
+            const fmt = (e) => {
+                let v = e.target.value.replace(/\D/g, '');
+                e.target.value = v ? parseInt(v, 10).toLocaleString('es-CO') : '';
+            };
+            input.addEventListener('input', fmt);
+            input.setAttribute('inputmode', 'numeric');
+            input.dataset.formatted = 'true';
+        });
+    };
+
+    const makeSelectSearchable = (selectId) => {
+        const select = document.getElementById(selectId);
+        if (!select) return;
+        const currentWrapper = select.closest('.relative');
+        if (currentWrapper) {
+            const searchInput = currentWrapper.querySelector('.search-input');
+            if (searchInput) {
+                const sel = select.options[select.selectedIndex];
+                searchInput.value = (sel && sel.value !== "") ? sel.textContent.split('(')[0].trim() : '';
+            }
+            return;
+        }
+        const wrapper = document.createElement('div');
+        wrapper.classList.add('relative', 'w-full');
+        select.parentNode.insertBefore(wrapper, select);
+        wrapper.appendChild(select);
+        const searchInput = document.createElement('input');
+        searchInput.type = 'text';
+        searchInput.placeholder = 'Buscar...';
+        searchInput.classList.add('w-full','px-4','py-2','border','rounded-lg','focus:outline-none','focus:ring-2','focus:ring-blue-300','search-input');
+        wrapper.insertBefore(searchInput, select);
+        select.classList.add('hidden');
+        const getOptions = () => Array.from(select.options);
+        const showAllOptions = () => {
+            const opts = getOptions();
+            select.innerHTML = '';
+            opts.forEach(o => select.appendChild(o.cloneNode(true)));
+            select.size = Math.min(10, opts.length);
+            select.classList.remove('hidden');
+            select.style.position = 'absolute';
+            select.style.width    = '100%';
+            select.style.zIndex   = '50';
+            select.style.backgroundColor = 'white';
+            select.style.boxShadow = '0 4px 6px rgba(0,0,0,0.1)';
+            select.style.top = `${searchInput.offsetHeight}px`;
+            select.style.border = '1px solid #ccc';
+            select.style.borderRadius = '0 0 0.5rem 0.5rem';
+        };
+        const filterOptions = (filter) => {
+            const opts    = getOptions();
+            const filtered = opts.filter(o => o.value === "" || o.textContent.toLowerCase().includes(filter.toLowerCase()));
+            select.innerHTML = '';
+            filtered.forEach(o => select.appendChild(o.cloneNode(true)));
+            (filtered.length > 1 || (filtered.length === 1 && filtered[0].value !== ""))
+                ? (select.classList.remove('hidden'), select.size = Math.min(10, filtered.length))
+                : select.classList.add('hidden');
+        };
+        searchInput.addEventListener('focus', showAllOptions);
+        searchInput.addEventListener('input', (ev) => filterOptions(ev.target.value));
+        select.addEventListener('change', () => {
+            const sel = select.options[select.selectedIndex];
+            if (sel) { searchInput.value = sel.textContent.split('(')[0].trim(); select.classList.add('hidden'); select.dispatchEvent(new Event('change', { bubbles: true })); }
+        });
+        window.addEventListener('click', (ev) => { if (!wrapper.contains(ev.target)) select.classList.add('hidden'); });
+        const init = select.options[select.selectedIndex];
+        if (init && init.value !== "") searchInput.value = init.textContent.split('(')[0].trim();
+    };
+
+    function showSection(id) {
+        sections.forEach(s => document.getElementById(s).classList.add('hidden'));
+        document.getElementById(id).classList.remove('hidden');
+        if (!['history-view'].includes(id)) {
+            document.querySelectorAll('#nav-links button').forEach(btn => {
+                btn.classList.toggle('bg-gray-700', btn.dataset.section === id);
+            });
+            previousSection = id;
+        }
+        if (id === 'register') {
+            const txs      = getItem('transactions') || [];
+            const accounts = getItem('accounts')     || [];
+            const pockets  = getItem('pockets')      || [];
+            populateMonthFilter('register-month-filter', txs, (f) => renderTransactions('all-transactions-list', f, accounts, pockets));
+            renderRegisterOptions(accounts, pockets);
+            makeSelectSearchable('afecta-cuenta');
+            makeSelectSearchable('afecta-bolsillo');
+            document.getElementById('distribution-summary-display').classList.add('hidden');
+            document.getElementById('pocket-selector-wrapper').classList.remove('hidden');
+            document.getElementById('multi-pocket-data').value = '';
+            document.getElementById('afecta-bolsillo').disabled = false;
+            document.getElementById('afecta-cuenta').disabled   = false;
+            const distBtn = document.getElementById('distribute-expense-btn');
+            distBtn.classList.toggle('hidden', document.getElementById('type').value !== 'expense');
+        }
+        if (id === 'transfers') {
+            renderTransferOptions(getItem('accounts') || [], getItem('pockets') || []);
+            document.getElementById('transfer-date').valueAsDate = new Date();
+            makeSelectSearchable('transfer-source-account');
+            makeSelectSearchable('transfer-source-pocket');
+            makeSelectSearchable('transfer-destination-account');
+            makeSelectSearchable('transfer-destination-pocket');
+        }
+        if (id === 'credit-cards') document.getElementById('purchase-date').valueAsDate = new Date();
+        if (id === 'automation') loadAutomationBudget();
+    }
+    window.showSection = showSection;
+
+    function showMessage(message, type = 'success') {
+        if (!message || !message.trim()) return;
+        const bar = document.getElementById('notification-bar');
+        bar.textContent = message;
+        bar.className = '';
+        bar.classList.add('notification-bar', { success:'bg-green-500', error:'bg-red-500', info:'bg-blue-500' }[type] || 'bg-green-500', 'text-white');
+        bar.classList.remove('notification-hidden');
+        setTimeout(() => bar.classList.add('notification-hidden'), 3000);
+    }
+
+    const showConfirmationModal = (msg, onConfirm) => {
+        document.getElementById('modal-message').textContent = msg;
+        confirmCallback = onConfirm;
+        document.getElementById('confirmation-modal').classList.remove('hidden');
+    };
+    const closeConfirmationModal = () => {
+        document.getElementById('confirmation-modal').classList.add('hidden');
+        confirmCallback = null;
+    };
+
+    const updateLastModified = () => {
+        const now = new Date();
+        const str = now.toLocaleString('es-CO', { dateStyle: 'full', timeStyle: 'medium' });
+        setItem('lastModified', str);
+        document.getElementById('last-modified-date').textContent = `Última modificación: ${str}`;
+    };
+
+    const saveState = () => {
+        updateLastModified();
+        let history = getItem('history') || [];
+        if (history.length >= 10) history = history.slice(1);
+        history.push({
+            accounts:              getItem('accounts')              || [],
+            pockets:               getItem('pockets')               || [],
+            transactions:          getItem('transactions')          || [],
+            creditCards:           getItem('credit_cards')          || [],
+            savedBudgets:          getItem('saved_budgets')         || [],
+            checkedTransactions:   getItem('checkedTransactions')   || {},
+            pocketPaymentsChecked
+        });
+        setItem('history', history);
+        setItem('redoHistory', []);
+        updateUndoRedoButtonStates();
+    };
+
+    const updateUndoRedoButtonStates = () => {
+        const history     = getItem('history')     || [];
+        const redoHistory = getItem('redoHistory') || [];
+        document.getElementById('undo-btn').disabled = history.length <= 1;
+        document.getElementById('redo-btn').disabled = redoHistory.length === 0;
+    };
+
+    window.undoLastAction = () => {
+        let history = getItem('history') || [];
+        let redoHistory = getItem('redoHistory') || [];
+        if (history.length <= 1) return showMessage('No hay acciones para deshacer.', 'error');
+        const cur = history.pop();
+        const prev = history[history.length - 1];
+        redoHistory.push(cur);
+        setItem('accounts', prev.accounts); setItem('pockets', prev.pockets);
+        setItem('transactions', prev.transactions); setItem('credit_cards', prev.creditCards);
+        setItem('saved_budgets', prev.savedBudgets); setItem('checkedTransactions', prev.checkedTransactions);
+        pocketPaymentsChecked = prev.pocketPaymentsChecked || {};
+        setItem('pocketPaymentsChecked', pocketPaymentsChecked);
+        setItem('history', history); setItem('redoHistory', redoHistory);
+        loadData(); showMessage('Última acción deshecha.', 'success');
+    };
+
+    window.redoLastAction = () => {
+        let history = getItem('history') || [];
+        let redoHistory = getItem('redoHistory') || [];
+        if (!redoHistory.length) return showMessage('No hay acciones para rehacer.', 'error');
+        const state = redoHistory.pop();
+        history.push(state);
+        setItem('accounts', state.accounts); setItem('pockets', state.pockets);
+        setItem('transactions', state.transactions); setItem('credit_cards', state.creditCards);
+        setItem('saved_budgets', state.savedBudgets); setItem('checkedTransactions', state.checkedTransactions);
+        pocketPaymentsChecked = state.pocketPaymentsChecked || {};
+        setItem('pocketPaymentsChecked', pocketPaymentsChecked);
+        setItem('history', history); setItem('redoHistory', redoHistory);
+        loadData(); showMessage('Acción rehecha.', 'success');
+    };
+
+    const loadData = () => {
+        const lastModified = getItem('lastModified');
+        document.getElementById('last-modified-date').textContent = lastModified ? `Última modificación: ${lastModified}` : 'Aún no hay modificaciones.';
+
+        const accounts    = (getItem('accounts')     || []).filter(i => i && i.name);
+        const pockets     = (getItem('pockets')      || []).filter(i => i && i.name);
+        let   transactions = getItem('transactions') || [];
+        checkedTransactions   = getItem('checkedTransactions')   || {};
+        pocketPaymentsChecked = getItem('pocketPaymentsChecked') || {};
+
+        let needsSave = false;
+        transactions.forEach(tx => { if (!tx.id) { tx.id = crypto.randomUUID(); needsSave = true; } });
+        if (needsSave) setItem('transactions', transactions);
+
+        const creditCards = getItem('credit_cards') || [];
+        creditCards.forEach(card => {
+            card.purchases.forEach(p => {
+                if (p.term && p.term.biWeekly && p.remainingBiWeekly === undefined) p.remainingBiWeekly = p.term.biWeekly;
+                if (p.term && p.term.monthly && p.remainingMonthly === undefined)   p.remainingMonthly  = p.term.monthly;
+                if (p.pocketId === undefined) p.pocketId = null;
+                if (p.isRecurring && p.biWeeklyPayment === undefined) p.biWeeklyPayment = p.monthlyPayment / 2;
+            });
+            if (!card.type) card.type = 'tarjeta-de-credito';
+            if (!card.paidMonths) { card.paidMonths = {}; if (card.lastMonthlyPaymentMonth) card.paidMonths[card.lastMonthlyPaymentMonth] = true; }
+        });
+        pockets.forEach(p => {
+            if (!p.biweeklyPaymentHistory)    p.biweeklyPaymentHistory = {};
+            if (!p.installmentTransferHistory) p.installmentTransferHistory = {};
+        });
+
+        const creditCardsOnly  = creditCards.filter(c => c.type === 'tarjeta-de-credito');
+        const regularCredits   = creditCards.filter(c => c.type === 'credito-regular');
+        const loans            = creditCards.filter(c => c.type === 'préstamo');
+
+        renderAccounts(accounts);
+        renderPockets(pockets);
+        renderTransferOptions(accounts, pockets);
+        renderTransferInstallmentOptions(accounts, pockets, creditCards);
+        renderCreditCards(creditCards, pockets);
+        renderDashboardAccountsList(accounts);
+        renderDashboardPocketsList(pockets);
+        renderBiWeeklyPaymentMonthOptions();
+
+        const totalAccounts  = accounts.reduce((a, b) => a + b.balance, 0);
+        const totalPockets   = pockets.reduce((a, b) => a + b.balance, 0);
+        const totalCC        = creditCardsOnly.reduce((a, b) => a + b.currentBalance, 0);
+        const totalRC        = regularCredits.reduce((a, b) => a + b.currentBalance, 0);
+        const totalLoans     = loans.reduce((a, b) => a + b.currentBalance, 0);
+        const totalPersonal  = pockets.filter(p => p.type === 'gastos-personales').reduce((a, b) => a + b.balance, 0);
+        const totalOverdraft = pockets.filter(p => p.type === 'sobregiro').reduce((a, b) => a + b.balance, 0);
+        const totalSavings   = pockets.filter(p => p.type === 'ahorro').reduce((a, b) => a + b.balance, 0);
+        const totalPayments  = pockets.filter(p => p.type === 'pagos').reduce((a, b) => a + b.balance, 0);
+
+        document.getElementById('total-all-accounts-balance').textContent    = formatNumber(totalAccounts);
+        document.getElementById('total-pockets-balance').textContent         = formatNumber(totalPockets);
+        document.getElementById('total-personal-expenses-balance').textContent = formatNumber(totalPersonal);
+        document.getElementById('total-overdraft-pockets-balance').textContent = formatNumber(totalOverdraft);
+
+        const combinedBalance = (totalAccounts + totalRC) - (totalSavings + totalPersonal + totalPayments);
+        document.getElementById('combined-balance-monitor').textContent = formatNumber(combinedBalance);
+
+        const specificAcc = accounts.find(a => a.name.toLowerCase() === "banco ahorro occidente");
+        const monitorEl   = document.getElementById('specific-account-monitor');
+        monitorEl.innerHTML = specificAcc
+            ? `<h3 class="text-xl font-bold text-gray-700 mb-2">${specificAcc.name}</h3><p class="text-3xl font-extrabold text-purple-600">${formatNumber(specificAcc.balance)}</p>`
+            : `<p class="text-sm text-gray-500">La cuenta "Banco ahorro Occidente" no ha sido creada.</p>`;
+
+        const gastosAdelantados = regularCredits.find(c => c.name.toLowerCase() === "gastos adelantados");
+        renderBalanceChart(totalAccounts, totalPockets, totalCC, totalRC, totalLoans, gastosAdelantados ? gastosAdelantados.currentBalance : 0);
+        renderDashboardCreditCardBalances(creditCardsOnly, regularCredits, loans);
+        updateUndoRedoButtonStates();
+    };
+
+    let balanceChartInstance = null;
+    const renderBalanceChart = (acc, pock, cc, rc, loans, gastosAd) => {
+        const ctx = document.getElementById('balanceChart').getContext('2d');
+        if (balanceChartInstance) balanceChartInstance.destroy();
+        balanceChartInstance = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['Cuentas','Bolsillos','Tarjetas Crédito','Créditos Regulares','Préstamos','Gastos Adelantados'],
+                datasets: [{
+                    label: 'Saldos Totales',
+                    data: [acc, pock, cc, rc, loans, gastosAd],
+                    backgroundColor: ['rgba(34,197,94,.7)','rgba(249,115,22,.7)','rgba(239,68,68,.7)','rgba(147,51,234,.7)','rgba(74,222,128,.7)','rgba(59,130,246,.7)'],
+                    borderColor:     ['rgba(34,197,94,1)', 'rgba(249,115,22,1)', 'rgba(239,68,68,1)', 'rgba(147,51,234,1)', 'rgba(74,222,128,1)', 'rgba(59,130,246,1)'],
+                    borderWidth: 1
+                }]
+            },
+            options: { responsive: true, scales: { y: { beginAtZero: true } }, plugins: { legend: { display: false } } }
+        });
+    };
+
+    window.updateCheckedState = (txId, isChecked) => {
+        if (isChecked) checkedTransactions[txId] = true;
+        else delete checkedTransactions[txId];
+        setItem('checkedTransactions', checkedTransactions);
+    };
+
+    window.updatePocketPaymentState = (key, isChecked) => {
+        if (isChecked) pocketPaymentsChecked[key] = true;
+        else delete pocketPaymentsChecked[key];
+        setItem('pocketPaymentsChecked', pocketPaymentsChecked);
+        loadData();
+    };
+
+    const renderTransactions = (containerId, transactions, accounts, pockets, contextItem = null) => {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+        if (!transactions.length) { container.innerHTML = `<p class="text-sm text-gray-500 text-center">No hay transacciones para mostrar en este período.</p>`; return; }
+        transactions.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        let html = '';
+        transactions.forEach(tx => {
+            let typeLabel = '', colorClass = '', desc = '', finalInfo = '';
+            const isLoanCtx = contextItem && contextItem.type === 'prestamo_account';
+            const affectedAcc = accounts.find(a => a.id === tx.accountId);
+            if (tx.type === 'transfer') {
+                typeLabel = 'Transferencia';
+                const src = (tx.sourceType === 'account') ? accounts.find(a => a.id === tx.sourceId) : pockets.find(p => p.id === tx.sourceId);
+                const dst = (tx.destinationType === 'account') ? accounts.find(a => a.id === tx.destinationId) : pockets.find(p => p.id === tx.destinationId);
+                desc = `De: ${src?.name || 'Desconocido'} | A: ${dst?.name || 'Desconocido'}`;
+                if (tx.finalSourceBalance !== undefined)      finalInfo += ` | Saldo Origen: ${formatNumber(tx.finalSourceBalance)}`;
+                if (tx.finalDestinationBalance !== undefined) finalInfo += ` | Saldo Destino: ${formatNumber(tx.finalDestinationBalance)}`;
+                colorClass = isLoanCtx ? (tx.destinationId === contextItem.id && tx.destinationType === 'account' ? 'text-red-500' : 'text-green-500') : 'text-gray-500';
+            } else {
+                typeLabel  = isLoanCtx ? (tx.type === 'expense' ? 'Abono (Gasto)' : 'Desembolso (Ingreso)') : (tx.type === 'expense' ? 'Gasto' : 'Ingreso');
+                colorClass = isLoanCtx ? (tx.type === 'expense' ? 'text-green-500' : 'text-red-500')         : (tx.type === 'expense' ? 'text-red-500'   : 'text-green-500');
+                let items  = [];
+                if (affectedAcc) items.push(affectedAcc.name);
+                if (tx.pocketId) { const p = pockets.find(p => p.id === tx.pocketId); if (p) items.push(p.name); }
+                else if (tx.distribution?.length) items.push(`Bolsillos Dist. (${tx.distribution.map(d => { const p = pockets.find(pk => pk.id === d.pocketId); return p ? `${p.name} (${formatNumber(d.value)})` : '?'; }).join(', ')})`);
+                desc = `Afecta: ${items.join(' y ')}`;
+                if (tx.finalAccountBalance != null) finalInfo += ` | Saldo Cta: ${formatNumber(tx.finalAccountBalance)}`;
+                if (tx.finalPocketBalance  != null) finalInfo += ` | Saldo Bls: ${formatNumber(tx.finalPocketBalance)}`;
+            }
+            const checked = checkedTransactions[tx.id] ? 'checked' : '';
+            html += `
+                <div class="bg-gray-100 p-4 rounded-lg shadow-md mb-2">
+                    <div class="flex justify-between items-start mb-1">
+                        <div class="flex items-center">
+                            <input type="checkbox" onchange="updateCheckedState('${tx.id}', this.checked)" ${checked} class="mr-3 h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                            <p class="font-bold">${tx.concept}</p>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <p class="${colorClass} font-bold">${formatNumber(tx.value)}</p>
+                            <button onclick="openEditTransactionModal('${tx.id}')" title="Editar" class="bg-yellow-500 text-white w-6 h-6 flex items-center justify-center rounded-full text-sm font-bold hover:bg-yellow-600 transition">✎</button>
+                            <button onclick="deleteTransaction('${tx.id}')" title="Eliminar" class="bg-red-500 text-white w-6 h-6 flex items-center justify-center rounded-full text-xs font-bold hover:bg-red-600 transition">✕</button>
+                        </div>
+                    </div>
+                    <p class="text-sm text-gray-600 ml-8">Fecha: ${tx.date} | Tipo: ${typeLabel}</p>
+                    <p class="text-sm text-gray-600 ml-8">${desc} ${finalInfo}</p>
+                </div>`;
+        });
+        container.innerHTML = html;
+    };
+
+    const renderRegisterOptions = (accounts, pockets) => {
+        const cSel = document.getElementById('afecta-cuenta');
+        const pSel = document.getElementById('afecta-bolsillo');
+        cSel.innerHTML = '<option value="" selected>Seleccione una cuenta (opcional)</option>';
+        pSel.innerHTML = '<option value="" selected>Seleccione un bolsillo (opcional)</option>';
+        accounts.forEach(a => cSel.innerHTML += `<option value="${a.id}">${a.name} (${ACCOUNT_TYPES[a.type] || a.type}) (${formatNumber(a.balance)})</option>`);
+        pockets.forEach(p => pSel.innerHTML += `<option value="${p.id}">${p.name} (${POCKET_TYPES[p.type] || p.type}) (${formatNumber(p.balance)})</option>`);
+    };
+
+    const renderAccounts = (accounts) => {
+        const c = document.getElementById('accounts-list');
+        c.innerHTML = '';
+        [...accounts].sort((a, b) => ({'prestamo_account':1,'anticipos':2,'virtual':3}[a.type]||4) - ({'prestamo_account':1,'anticipos':2,'virtual':3}[b.type]||4))
+        .forEach(a => c.innerHTML += `
+            <div class="bg-gray-100 p-4 rounded-lg shadow-md flex justify-between items-center mb-2">
+                <div><p class="font-bold">${a.name} <span class="text-xs font-normal text-gray-500">(${ACCOUNT_TYPES[a.type] || a.type})</span></p><p class="text-sm text-gray-600">Saldo: ${formatNumber(a.balance)}</p></div>
+                <div class="flex space-x-2">
+                    <button onclick="showHistoryFor('account','${a.id}')" class="bg-blue-500 text-white px-3 py-1 rounded-full text-xs hover:bg-blue-600 transition">Historial</button>
+                    <button onclick="editItem('${a.id}','accounts')" class="bg-yellow-500 text-white px-3 py-1 rounded-full text-xs hover:bg-yellow-600 transition">Editar</button>
+                    <button onclick="deleteItem('${a.id}','accounts')" class="bg-red-500 text-white px-3 py-1 rounded-full text-xs hover:bg-red-600 transition">Eliminar</button>
+                </div>
+            </div>`);
+    };
+
+    const renderDashboardAccountsList = (accounts) => {
+        const c = document.getElementById('all-accounts-list');
+        c.innerHTML = '';
+        if (!accounts.length) { c.innerHTML = `<p class="text-sm text-gray-500">No hay cuentas registradas.</p>`; return; }
+        [...accounts].sort((a, b) => ({'virtual':1,'anticipos':2,'prestamo_account':3}[a.type]||4) - ({'virtual':1,'anticipos':2,'prestamo_account':3}[b.type]||4))
+        .forEach(a => {
+            const col = a.type === 'prestamo_account' ? 'text-red-600' : a.type === 'virtual' ? 'text-green-600' : 'text-blue-600';
+            c.innerHTML += `
+                <div class="flex justify-between items-center py-2 border-b border-gray-200 last:border-b-0">
+                    <div><p class="font-bold">${a.name} <span class="text-xs font-normal text-gray-500">(${ACCOUNT_TYPES[a.type] || a.type})</span></p><p class="${col} font-semibold">${formatNumber(a.balance)}</p></div>
+                    <button onclick="showHistoryFor('account','${a.id}')" class="bg-blue-500 text-white px-3 py-1 rounded-full text-xs hover:bg-blue-600 transition">Ver Historial</button>
+                </div>`;
+        });
+    };
+
+    const renderPockets = (pockets) => {
+        const c = document.getElementById('pockets-list');
+        c.innerHTML = '';
+        [...pockets].sort((a, b) => ({'ahorro':1,'pagos':2,'gastos-personales':3,'sobregiro':4}[a.type]||5) - ({'ahorro':1,'pagos':2,'gastos-personales':3,'sobregiro':4}[b.type]||5))
+        .forEach(p => c.innerHTML += `
+            <div class="bg-gray-100 p-4 rounded-lg shadow-md flex justify-between items-center mb-2">
+                <div><p class="font-bold">${p.name} <span class="text-xs font-normal text-gray-500">(${POCKET_TYPES[p.type] || p.type})</span></p><p class="text-sm text-gray-600">Saldo: ${formatNumber(p.balance)}</p></div>
+                <div class="flex space-x-2">
+                    <button onclick="showHistoryFor('pocket','${p.id}')" class="bg-blue-500 text-white px-3 py-1 rounded-full text-xs hover:bg-blue-600 transition">Historial</button>
+                    <button onclick="editItem('${p.id}','pockets')" class="bg-yellow-500 text-white px-3 py-1 rounded-full text-xs hover:bg-yellow-600 transition">Editar</button>
+                    <button onclick="deleteItem('${p.id}','pockets')" class="bg-red-500 text-white px-3 py-1 rounded-full text-xs hover:bg-red-600 transition">Eliminar</button>
+                </div>
+            </div>`);
+    };
+
+    const renderTransferOptions = (accounts, pockets) => {
+        const ids = ['transfer-source-account','transfer-source-pocket','transfer-destination-account','transfer-destination-pocket','purchase-pocket','edit-transfer-source-account','edit-transfer-source-pocket','edit-transfer-destination-account','edit-transfer-destination-pocket'];
+        const sels = ids.map(id => document.getElementById(id));
+        sels.forEach(s => { if(s) s.innerHTML = ''; });
+        const accOpts  = ['<option value="" disabled selected>Cuenta</option>',   ...accounts.map(a => `<option value="${a.id}">${a.name} (${ACCOUNT_TYPES[a.type]||a.type}) (${formatNumber(a.balance)})</option>`)];
+        const pockOpts = ['<option value="" disabled selected>Bolsillo</option>', ...pockets.map(p  => `<option value="${p.id}">${p.name} (${POCKET_TYPES[p.type]||p.type}) (${formatNumber(p.balance)})</option>`)];
+        [0,2,5,7].forEach(i => { if(sels[i]) sels[i].innerHTML = accOpts.join(''); });
+        [1,3,6,8].forEach(i => { if(sels[i]) sels[i].innerHTML = pockOpts.join(''); });
+        if(sels[4]) sels[4].innerHTML = '<option value="" selected>No usar bolsillo</option>' + pockOpts.slice(1).join('');
+    };
+
+    const renderDashboardPocketsList = (pockets) => {
+        const ids = { ahorro:'savings-pockets-list', pagos:'payments-pockets-list', 'gastos-personales':'personal-expenses-pockets-list' };
+        Object.values(ids).forEach(id => document.getElementById(id).innerHTML = '');
+        const now = new Date();
+        const currentMonthYear = `${now.getFullYear()}-${now.getMonth()}`;
+        const creditCards = getItem('credit_cards') || [];
+
+        const renderItem = (p) => {
+            let col = 'text-gray-600', statusTag = '', checkHtml = '';
+            if (p.type === 'ahorro') col = 'text-blue-500';
+            else if (p.type === 'pagos') col = 'text-red-500';
+            else if (p.type === 'gastos-personales') col = 'text-orange-500';
+
+            let needed = 0;
+            if (p.type === 'pagos') {
+                creditCards.forEach(c => c.purchases.forEach(pur => {
+                    if (pur.pocketId === p.id && !isNewPurchase(pur.date) && (pur.remainingBiWeekly > 0 || pur.isRecurring)) needed += pur.biWeeklyPayment;
+                }));
+            }
+            const insufficient = needed > 0 && p.balance < needed;
+            if (needed > 0) statusTag = `<p class="text-xs ${insufficient ? 'text-red-600 font-bold' : 'text-gray-600'}">Cuota Quincenal: ${formatNumber(needed)}</p>`;
+            if (p.type === 'pagos') {
+                const key = `${currentMonthYear}-${p.id}`;
+                const paid = pocketPaymentsChecked[key] || false;
+                checkHtml = `<div class="flex items-center space-x-2"><input type="checkbox" onchange="updatePocketPaymentState('${key}', this.checked)" ${paid?'checked':''} class="h-4 w-4 rounded border-gray-300 text-blue-600"><span class="text-xs text-gray-700">Pagado este mes</span></div>`;
+            }
+            return `
+                <div class="flex justify-between items-center py-2 border-b border-gray-200 last:border-b-0 ${insufficient?'border-l-4 border-red-500':''}">
+                    <div><p class="font-bold">${p.name}</p><p class="${col} font-semibold">${formatNumber(p.balance)}</p>${statusTag}</div>
+                    <div class="flex flex-col items-end space-y-1">${checkHtml}<button onclick="showHistoryFor('pocket','${p.id}')" class="bg-blue-500 text-white px-3 py-1 rounded-full text-xs hover:bg-blue-600 transition">Ver Historial</button></div>
+                </div>`;
+        };
+
+        Object.entries(ids).forEach(([type, id]) => {
+            const filtered = pockets.filter(p => p.type === type);
+            const el = document.getElementById(id);
+            el.innerHTML = filtered.length ? filtered.map(renderItem).join('') : `<p class="text-sm text-gray-500">No hay bolsillos de ${type} registrados.</p>`;
+        });
+    };
+
+    const renderDashboardCreditCardBalances = (cc, rc, loans) => {
+        const renderItem = c => `<div class="flex justify-between items-center py-2 border-b border-gray-200 last:border-b-0"><p class="font-bold">${c.name}</p><p class="text-red-500 font-semibold">${formatNumber(c.currentBalance)}</p></div>`;
+        ['credit-card-only-balances','regular-credit-only-balances','loan-only-balances'].forEach(id => document.getElementById(id).innerHTML = '');
+        document.getElementById('credit-card-only-balances').innerHTML  = cc.length    ? cc.map(renderItem).join('')    : `<p class="text-sm text-gray-500">No hay tarjetas.</p>`;
+        document.getElementById('regular-credit-only-balances').innerHTML = rc.length  ? rc.map(renderItem).join('')    : `<p class="text-sm text-gray-500">No hay créditos regulares.</p>`;
+        document.getElementById('loan-only-balances').innerHTML          = loans.length ? loans.map(renderItem).join('') : `<p class="text-sm text-gray-500">No hay préstamos.</p>`;
+    };
+
+    const renderBiWeeklyPocketSummary = (cards, pockets) => {
+        const c = document.getElementById('bi-weekly-pocket-summary');
+        c.innerHTML = '';
+        const byPocket = {};
+        cards.forEach(card => card.purchases.forEach(p => {
+            if (p.pocketId && !isNewPurchase(p.date) && (p.remainingBiWeekly > 0 || p.isRecurring)) {
+                byPocket[p.pocketId] = (byPocket[p.pocketId] || 0) + p.biWeeklyPayment;
+            }
+        }));
+        const keys = Object.keys(byPocket);
+        if (!keys.length) { c.innerHTML = `<p class="text-sm text-gray-500">No hay cuotas quincenales asignadas a bolsillos pendientes.</p>`; return; }
+        let grand = 0;
+        keys.forEach(id => {
+            const p = pockets.find(pk => pk.id === id);
+            if (!p) return;
+            grand += byPocket[id];
+            const insuf = p.balance < byPocket[id];
+            c.innerHTML += `
+                <div class="p-3 rounded-lg border shadow-sm mb-2 ${insuf?'bg-red-100 border-red-300':'bg-gray-100 border-gray-200'}">
+                    <div class="flex justify-between items-center"><p class="font-bold">${p.name}</p><p class="${insuf?'text-red-700 font-extrabold':'text-blue-500 font-semibold'}">${formatNumber(byPocket[id])}</p></div>
+                    <div class="flex justify-between items-center mt-1 text-sm text-gray-600"><span>Saldo actual:</span><span class="font-semibold">${formatNumber(p.balance)}</span></div>
+                </div>`;
+        });
+        c.innerHTML += `<div class="mt-4 pt-3 border-t-2 border-gray-300"><div class="flex justify-between items-center font-bold text-lg"><p>Total Cuotas Quincenales:</p><p class="text-red-500">${formatNumber(grand)}</p></div></div>`;
+    };
+
+    window.togglePurchases = (cardId) => {
+        document.getElementById(`purchases-${cardId}`)?.classList.toggle('hidden');
+        document.getElementById(`arrow-${cardId}`)?.classList.toggle('rotate-180');
+    };
+
+    const renderCreditCards = (cards, pockets) => {
+        const list = document.getElementById('credit-cards-list');
+        list.innerHTML = '';
+        const pSel = document.getElementById('purchase-card');
+        const payS = document.getElementById('payment-card');
+        pSel.innerHTML = '<option value="" disabled selected>Seleccione una tarjeta</option>';
+        payS.innerHTML = '<option value="" disabled selected>Seleccione una tarjeta</option>';
+
+        cards.forEach(card => {
+            let totalBi = 0, totalMo = 0;
+            card.purchases.forEach(p => {
+                if (!isNewPurchase(p.date)) {
+                    if (p.remainingBiWeekly > 0 || p.isRecurring) totalBi += p.biWeeklyPayment;
+                    if (p.remainingMonthly  > 0 || p.isRecurring) totalMo += p.monthlyPayment;
+                }
+            });
+            const typeLabel = card.type === 'tarjeta-de-credito' ? 'Tarjeta de Crédito' : card.type === 'credito-regular' ? 'Crédito Regular' : 'Préstamo';
+            list.innerHTML += `
+                <div class="bg-white p-6 rounded-lg shadow-xl mb-4">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h3 class="text-xl font-bold text-gray-700">${card.name}</h3>
+                            <p class="text-sm text-gray-600 mb-1">Tipo: ${typeLabel}</p>
+                            <p class="text-red-500 font-extrabold text-2xl">Saldo: ${formatNumber(card.currentBalance)}</p>
+                            <div class="mt-2 text-sm text-gray-600 space-y-1">
+                                <p class="font-bold">Cuota Mensual Total: <span class="text-blue-600">${formatNumber(totalMo)}</span></p>
+                                <p class="font-bold">Cuota Quincenal Total: <span class="text-red-500">${formatNumber(totalBi)}</span></p>
+                            </div>
+                        </div>
+                        <div class="flex flex-col space-y-2">
+                            <button onclick="showMonthlyPaymentModal('${card.id}')" class="bg-green-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-green-600 transition">Pagar Cuota Mensual</button>
+                            <button onclick="openAdjustBalanceModal('${card.id}')" class="bg-blue-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-600 transition">Ajustar Saldo</button>
+                            <button onclick="deleteItem('${card.id}','credit_cards')" class="bg-red-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-red-600 transition">Eliminar</button>
+                        </div>
+                    </div>
+                    <div class="mt-4 border-t pt-4">
+                        <div class="flex justify-between items-center cursor-pointer" onclick="togglePurchases('${card.id}')">
+                            <h4 class="text-lg font-semibold text-gray-600">Compras</h4>
+                            <svg id="arrow-${card.id}" class="w-6 h-6 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                        </div>
+                        <div id="purchases-${card.id}" class="space-y-2 hidden mt-2">
+                            ${card.purchases.length ? card.purchases.map(p => {
+                                const pock = p.pocketId ? pockets.find(pk => pk.id === p.pocketId) : null;
+                                const isNew = isNewPurchase(p.date);
+                                const badge = isNew ? '<span class="ml-2 bg-yellow-400 text-yellow-900 text-[10px] px-2 py-0.5 rounded-full font-extrabold uppercase tracking-wider">Nueva Compra</span>' : '';
+                                const termInfo = p.isRecurring ? `Tipo: Recurrente | Cuota: ${formatNumber(p.monthlyPayment)}` : `Plazo: ${p.term.monthly} meses | Cuotas restantes: ${p.remainingMonthly} meses y ${p.remainingBiWeekly} quincenas`;
+                                return `
+                                    <div class="bg-gray-100 p-3 rounded-lg flex justify-between items-start ${isNew?'border-l-4 border-yellow-400':''}">
+                                        <div>
+                                            <p class="font-bold flex items-center">${p.concept} ${badge}</p>
+                                            <p class="text-sm text-gray-600">Fecha: ${p.date||'N/A'}</p>
+                                            <p class="text-sm text-gray-600">Valor: ${formatNumber(p.value)}</p>
+                                            <p class="text-sm text-gray-600">${termInfo}</p>
+                                            <p class="text-sm text-gray-600">Pagar con bolsillo: ${pock?.name||'No asignado'}</p>
+                                        </div>
+                                        <div class="flex flex-col space-y-2 ml-4">
+                                            <p class="text-sm text-gray-700">Cuota mensual: ${formatNumber(p.monthlyPayment)}</p>
+                                            ${!p.isRecurring ? `<p class="text-sm text-gray-700">Cuota quincenal: ${formatNumber(p.biWeeklyPayment)}</p>` : ''}
+                                            <button onclick="editPurchase('${card.id}','${p.id}')" class="bg-yellow-500 text-white px-3 py-1 rounded-full text-xs hover:bg-yellow-600 transition">Editar</button>
+                                            <button onclick="deletePurchase('${card.id}','${p.id}')" class="bg-red-500 text-white px-3 py-1 rounded-full text-xs hover:bg-red-600 transition">Eliminar</button>
+                                        </div>
+                                    </div>`;
+                            }).join('') : '<p class="text-sm text-gray-500">No hay compras registradas.</p>'}
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <h4 class="text-lg font-semibold text-gray-600 mb-2">Abonos</h4>
+                        <div class="space-y-2">
+                            ${card.payments.map(p => `
+                                <div class="bg-gray-100 p-3 rounded-lg flex justify-between items-center">
+                                    <p class="font-bold">${p.concept||'Abono Manual'}</p>
+                                    <p class="${p.value>=0?'text-green-500':'text-red-500'} font-semibold">${formatNumber(Math.abs(p.value))}</p>
+                                </div>`).join('')}
+                        </div>
+                    </div>
+                </div>`;
+            pSel.innerHTML += `<option value="${card.id}">${card.name}</option>`;
+            payS.innerHTML += `<option value="${card.id}">${card.name}</option>`;
+        });
+        renderBiWeeklyPocketSummary(cards, pockets);
+    };
+
+    const renderBiWeeklyPaymentMonthOptions = () => {
+        const s = document.getElementById('biweekly-payment-month');
+        if (!s) return;
+        s.innerHTML = '';
+        const now = new Date();
+        for (let i = -11; i <= 11; i++) {
+            const d = new Date(now.getFullYear(), now.getMonth()+i, 1);
+            const opt = document.createElement('option');
+            opt.value = d.getMonth(); opt.dataset.year = d.getFullYear();
+            opt.textContent = `${monthNames[d.getMonth()]} ${d.getFullYear()}`;
+            if (i === 0) opt.selected = true;
+            s.appendChild(opt);
+        }
+    };
+
+    const renderAutomationMonthOptions = (sel) => {
+        if (!sel) return;
+        sel.innerHTML = '';
+        const now = new Date();
+        for (let i = -3; i <= 3; i++) {
+            const d = new Date(now.getFullYear(), now.getMonth()+i, 1);
+            const opt = document.createElement('option');
+            opt.value = d.toISOString(); opt.textContent = `${monthNames[d.getMonth()]} ${d.getFullYear()}`;
+            if (i === 0) opt.selected = true;
+            sel.appendChild(opt);
+        }
+    };
+
+    document.getElementById('pay-biweekly-pocket-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        saveState();
+        const form = e.target;
+        const month    = parseInt(form.biweekly_payment_month.value);
+        const year     = parseInt(form.biweekly_payment_month.options[form.biweekly_payment_month.selectedIndex].dataset.year);
+        const fortnight = form.biweekly_payment_fortnight.value;
+        let pockets     = getItem('pockets') || [];
+        let creditCards = getItem('credit_cards') || [];
+        let transactions = getItem('transactions') || [];
+        let totalDeducted = 0, summary = [];
+
+        pockets.forEach(pocket => {
+            const key = `${year}-${month}-${fortnight}`;
+            if (pocket.biweeklyPaymentHistory?.[key]) return;
+            let total = 0;
+            creditCards.forEach(card => card.purchases.forEach(p => {
+                if (p.pocketId === pocket.id && !isNewPurchase(p.date) && (p.remainingBiWeekly > 0 || p.isRecurring)) total += p.biWeeklyPayment;
+            }));
+            if (total > 0) {
+                if (pocket.balance < total && pocket.type !== 'sobregiro') { showMessage(`Saldo insuficiente en ${pocket.name}.`, 'error'); return; }
+                pocket.balance -= total;
+                if (!pocket.biweeklyPaymentHistory) pocket.biweeklyPaymentHistory = {};
+                pocket.biweeklyPaymentHistory[key] = total;
+                totalDeducted += total; summary.push(`${pocket.name}: ${formatNumber(total)}`);
+                transactions.push({ id: crypto.randomUUID(), date: new Date().toISOString().split('T')[0], concept: `Reserva quincena ${fortnight==='first'?'1a':'2a'} de ${monthNames[month]} ${year} - ${pocket.name}`, value: total, type: 'expense', pocketId: pocket.id, finalPocketBalance: pocket.balance, createdAt: new Date().toISOString() });
+            }
+        });
+
+        if (totalDeducted > 0) {
+            setItem('pockets', pockets); setItem('transactions', transactions);
+            loadData(); showMessage(`Se reservaron ${formatNumber(totalDeducted)}. ${summary.join(', ')}.`);
+        } else {
+            showMessage('No hay cuotas pendientes para esta quincena, o ya fueron deducidas.', 'error');
+        }
+        form.reset();
+    });
+
+    const renderTransferInstallmentOptions = (accounts, pockets, creditCards) => {
+        const cSel = document.getElementById('transfer-installment-card');
+        const pSel = document.getElementById('transfer-installment-destination');
+        const mSel = document.getElementById('transfer-installment-month');
+        cSel.innerHTML = '<option value="" disabled selected>Seleccione una tarjeta</option>';
+        pSel.innerHTML = '<option value="" disabled selected>Seleccione un bolsillo</option>';
+        mSel.innerHTML = '';
+        creditCards.forEach(c => cSel.innerHTML += `<option value="${c.id}">${c.name}</option>`);
+        pockets.forEach(p     => pSel.innerHTML += `<option value="${p.id}">${p.name} (${POCKET_TYPES[p.type]||p.type}) (${formatNumber(p.balance)})</option>`);
+        const now = new Date();
+        for (let i = -11; i <= 11; i++) {
+            const d = new Date(now.getFullYear(), now.getMonth()+i, 1);
+            const opt = document.createElement('option');
+            opt.value = d.getMonth(); opt.dataset.year = d.getFullYear();
+            opt.textContent = `${monthNames[d.getMonth()]} ${d.getFullYear()}`;
+            if (i === 0) opt.selected = true;
+            mSel.appendChild(opt);
+        }
+    };
+
+    document.getElementById('transfer-installment-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        saveState();
+        const form = e.target;
+        const cardId   = form.transfer_installment_card.value;
+        const pocketId = form.transfer_installment_destination.value;
+        const month    = parseInt(form.transfer_installment_month.value);
+        const year     = parseInt(form.transfer_installment_month.options[form.transfer_installment_month.selectedIndex].dataset.year);
+        const fortnight = form['transfer-installment-fortnight'].value;
+        if (!cardId || !pocketId) return showMessage('Seleccione tarjeta y bolsillo.', 'error');
+
+        let cards   = getItem('credit_cards') || [];
+        let pockets = getItem('pockets')      || [];
+        const cIdx  = cards.findIndex(c => c.id === cardId);
+        const pIdx  = pockets.findIndex(p => p.id === pocketId);
+        if (cIdx === -1 || pIdx === -1) return showMessage('Tarjeta o bolsillo no encontrado.', 'error');
+
+        const key = `provision-${cardId}-${year}-${month}-${fortnight}`;
+        if (pockets[pIdx].installmentTransferHistory?.[key]) return showMessage('Provisión ya realizada para esta quincena.', 'error');
+
+        let total = 0;
+        cards[cIdx].purchases.forEach(p => {
+            if (!isNewPurchase(p.date) && (p.remainingBiWeekly > 0 || p.isRecurring)) {
+                total += p.biWeeklyPayment;
+                if (!p.pocketId || p.pocketId === "") p.pocketId = pocketId;
+            }
+        });
+        if (total <= 0) return showMessage('No hay cuotas quincenales pendientes para provisionar.', 'error');
+
+        pockets[pIdx].balance += total;
+        if (!pockets[pIdx].installmentTransferHistory) pockets[pIdx].installmentTransferHistory = {};
+        pockets[pIdx].installmentTransferHistory[key] = true;
+        setItem('pockets', pockets); setItem('credit_cards', cards);
+
+        const txs = getItem('transactions') || [];
+        txs.push({ id: crypto.randomUUID(), date: new Date().toISOString().split('T')[0], concept: `Provisión cuota de ${cards[cIdx].name} a ${pockets[pIdx].name}`, value: total, type: 'income', accountId: null, pocketId, finalPocketBalance: pockets[pIdx].balance, createdAt: new Date().toISOString() });
+        setItem('transactions', txs);
+        loadData(); showMessage(`Se provisionaron ${formatNumber(total)} en ${pockets[pIdx].name}.`);
+        form.reset();
+    });
+
+    document.getElementById('account-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const form = e.target;
+        const name = form.name.value, bal = parseFormattedNumber(form.initial_balance.value), type = form.type.value, editId = form.dataset.editingId;
+        saveState();
+        let accounts = getItem('accounts') || [];
+        if (editId) {
+            const idx = accounts.findIndex(a => a.id === editId);
+            if (idx !== -1) { accounts[idx].name = name; accounts[idx].balance = bal; accounts[idx].type = type; showMessage('Cuenta actualizada.'); delete form.dataset.editingId; }
+        } else {
+            accounts.push({ id: crypto.randomUUID(), name, balance: bal, type, createdAt: new Date().toISOString() });
+            showMessage('Cuenta creada.');
+        }
+        setItem('accounts', accounts); loadData(); form.reset();
+    });
+
+    document.getElementById('pocket-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const form = e.target;
+        const name = form.name.value, bal = parseFormattedNumber(form.initial_balance.value), type = form.type.value, editId = form.dataset.editingId;
+        saveState();
+        let pockets = getItem('pockets') || [];
+        if (editId) {
+            const idx = pockets.findIndex(p => p.id === editId);
+            if (idx !== -1) { pockets[idx].name = name; pockets[idx].balance = bal; pockets[idx].type = type; showMessage('Bolsillo actualizado.'); delete form.dataset.editingId; }
+        } else {
+            pockets.push({ id: crypto.randomUUID(), name, balance: bal, type, biweeklyPaymentHistory: {}, installmentTransferHistory: {}, createdAt: new Date().toISOString() });
+            showMessage('Bolsillo creado.');
+        }
+        setItem('pockets', pockets); loadData(); form.reset();
+    });
+
+    document.getElementById('transfer-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const form = e.target;
+        const srcAccId  = form.sourceAccount.value,      srcPockId  = form.sourcePocket.value;
+        const dstAccId  = form.destinationAccount.value, dstPockId  = form.destinationPocket.value;
+        const value     = parseFormattedNumber(form.value.value);
+        const concept   = form.concept.value, date = form.date.value;
+        const srcs = [srcAccId, srcPockId].filter(Boolean), dsts = [dstAccId, dstPockId].filter(Boolean);
+        if (srcs.length !== 1 || dsts.length !== 1) return showMessage('Debe seleccionar un único origen y un único destino.', 'error');
+        const srcId = srcs[0], dstId = dsts[0];
+        const srcType = srcAccId ? 'account' : 'pocket', dstType = dstAccId ? 'account' : 'pocket';
+        if (srcId === dstId && srcType === dstType) return showMessage('El origen y destino no pueden ser los mismos.', 'error');
+        if (!value || value <= 0) return showMessage('Ingrese un valor válido.', 'error');
+        saveState();
+        let accounts = getItem('accounts') || [], pockets = getItem('pockets') || [];
+        let src = srcType === 'account' ? accounts.find(a => a.id === srcId) : pockets.find(p => p.id === srcId);
+        let dst = dstType === 'account' ? accounts.find(a => a.id === dstId) : pockets.find(p => p.id === dstId);
+        if (!src || !dst) return showMessage('Origen o destino no encontrado.', 'error');
+        if (src.type !== 'sobregiro' && src.balance < value) return showMessage('Saldo insuficiente en el origen.', 'error');
+        const isVirtual = srcType === 'account' && src.type === 'virtual' && dstType === 'pocket';
+        if (!isVirtual) src.balance -= value;
+        dst.balance += value;
+        setItem('accounts', accounts); setItem('pockets', pockets);
+        const txs = getItem('transactions') || [];
+        txs.push({ id: crypto.randomUUID(), date, concept, value, type: 'transfer', sourceId: srcId, sourceType: srcType, destinationId: dstId, destinationType: dstType, finalSourceBalance: src.balance, finalDestinationBalance: dst.balance, createdAt: new Date().toISOString() });
+        setItem('transactions', txs);
+        loadData(); showMessage('Transferencia realizada.'); form.reset();
+        document.getElementById('transfer-date').valueAsDate = new Date();
+    });
+
+    const processAutomationRoutine = (month, year, fortnight) => {
+        saveState();
+        const savedBudgets = getItem('saved_budgets') || [];
+        const budget = savedBudgets.find(b => b.id === activeAutomationBudgetId);
+        if (!budget) return showMessage('No hay un presupuesto cargado.', 'error');
+        let pockets = (getItem('pockets') || []).filter(i => i && i.name);
+        const txs   = getItem('transactions') || [];
+        const execKey = `${budget.id}-${year}-${month}-${fortnight}`;
+        if (budget.data?.lastExecution === execKey) return showMessage('La rutina ya se ejecutó para esta quincena.', 'error');
+        let total = 0; const pockUpdates = {}; const newTxs = [];
+        for (const pId in budget.data) {
+            if (pId === 'lastExecution') continue;
+            const amount = parseFormattedNumber(budget.data[pId]);
+            if (amount > 0 && pockets.some(p => p.id === pId)) {
+                total += amount; pockUpdates[pId] = (pockUpdates[pId] || 0) + amount;
+                const pock = pockets.find(p => p.id === pId);
+                newTxs.push({ id: crypto.randomUUID(), date: new Date().toISOString().split('T')[0], concept: 'Provisión automática quincenal', value: amount, type: 'income', accountId: null, pocketId: pId, finalPocketBalance: pock.balance + amount, createdAt: new Date().toISOString() });
+            }
+        }
+        if (!total) return showMessage('No hay valores definidos.', 'error');
+        const finalPockets = pockets.map(p => pockUpdates[p.id] ? { ...p, balance: p.balance + pockUpdates[p.id] } : p);
+        budget.data.lastExecution = execKey;
+        setItem('saved_budgets', savedBudgets); setItem('pockets', finalPockets); setItem('transactions', [...txs, ...newTxs]);
+        loadData(); showMessage(`Rutina ejecutada. Se provisionaron ${formatNumber(total)} a los bolsillos.`);
+    };
+
+    const updateAutomationSummary = (budgetData) => {
+        const c = document.getElementById('automation-summary');
+        if (!budgetData) { c?.classList.add('hidden'); return; }
+        const pockets = (getItem('pockets') || []).filter(i => i && i.name);
+        const list = document.getElementById('automation-summary-list');
+        if (list) list.innerHTML = '';
+        let total = 0;
+        for (const pId in budgetData) {
+            if (pId === 'lastExecution') continue;
+            const v = parseFormattedNumber(budgetData[pId]);
+            if (v > 0) {
+                const p = pockets.find(pk => pk.id === pId);
+                if (p && list) { total += v; list.innerHTML += `<li class="flex justify-between items-center"><span class="text-gray-600">${p.name}</span><span class="font-semibold">${formatNumber(v)}</span></li>`; }
+            }
+        }
+        const totalEl = document.getElementById('automation-total-summary');
+        if (totalEl) totalEl.textContent = formatNumber(total);
+        if (c) c.classList.toggle('hidden', total === 0);
+    };
+
+    window.loadAutomationBudget = () => {
+        const form = document.getElementById('automation-form');
+        const savedBudgets = getItem('saved_budgets') || [];
+        const pockets      = (getItem('pockets') || []).filter(i => i && i.name);
+
+        if (!document.getElementById('pocket-budget-inputs') || pockets.length !== document.getElementById('pocket-budget-inputs').children.length) {
+            form.innerHTML = `
+                <div id="pocket-budget-inputs"></div>
+                <div id="automation-summary" class="hidden mt-6 p-4 border rounded-lg bg-white shadow-inner">
+                    <h4 class="text-lg font-bold text-gray-700 mb-2">Resumen del Presupuesto:</h4>
+                    <ul id="automation-summary-list" class="space-y-1"></ul>
+                    <hr class="my-2 border-gray-300">
+                    <div class="flex justify-between font-bold text-lg"><span>Total a Provisionar:</span><span id="automation-total-summary" class="text-blue-600"></span></div>
+                </div>
+                <button type="submit" class="w-full bg-blue-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-600 transition mt-6">Guardar Cambios</button>`;
+            const pInputs = document.getElementById('pocket-budget-inputs');
+            pockets.forEach(p => pInputs.innerHTML += `<div class="mb-4"><label class="block text-gray-700 font-bold mb-2">${p.name}</label><input type="text" name="pocket_${p.id}" value="" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300 automation-input" placeholder="Valor a provisionar"></div>`);
+            applyNumberFormatting('.automation-input');
+            document.querySelectorAll('.automation-input').forEach(inp => inp.addEventListener('input', () => updateAutomationSummary(getFormDataAsBudgetObject())));
+        }
+        renderSavedBudgets();
+        if (!activeAutomationBudgetId && savedBudgets.length > 0) loadBudget(savedBudgets[0].id);
+        else if (activeAutomationBudgetId) { const b = savedBudgets.find(b => b.id === activeAutomationBudgetId); if (b) loadBudget(b.id); else activeAutomationBudgetId = null; }
+
+        const runContainer = document.getElementById('run-automation-form-container');
+        runContainer.innerHTML = '';
+        const runForm = document.createElement('form');
+        runForm.id = 'run-automation-form';
+        runForm.className = 'space-y-4 mb-6 p-4 bg-gray-50 rounded-lg shadow';
+        const mSel = document.createElement('select');
+        mSel.id = 'automation-month'; mSel.name = 'automation-month'; mSel.required = true;
+        mSel.className = 'w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300';
+        renderAutomationMonthOptions(mSel);
+        runForm.innerHTML = `
+            <div class="bg-gray-100 p-4 rounded-lg">
+                <h3 class="text-xl font-bold text-gray-700 mb-2">Ejecutar Rutina de Automatización</h3>
+                <div class="mb-4"><label for="automation-month" class="block text-gray-700 font-bold mb-2">Seleccionar Mes</label></div>
+                <div><label for="automation-fortnight" class="block text-gray-700 font-bold mb-2">Seleccionar Quincena</label>
+                    <select id="automation-fortnight" name="automation-fortnight" required class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300">
+                        <option value="first" selected>Primera Quincena</option><option value="second">Segunda Quincena</option>
+                    </select>
+                </div>
+                <button type="submit" class="w-full bg-green-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-green-600 transition mt-4">Ejecutar Rutina Ahora</button>
+            </div>`;
+        runForm.querySelector('label[for="automation-month"]').after(mSel);
+        runContainer.appendChild(runForm);
+        runForm.onsubmit = (ev) => { ev.preventDefault(); const d = new Date(mSel.value); processAutomationRoutine(d.getMonth(), d.getFullYear(), runForm['automation-fortnight'].value); };
+    };
+
+    const getFormDataAsBudgetObject = () => {
+        const form = document.getElementById('automation-form');
+        const data = {};
+        form.querySelectorAll('[name^="pocket_"]').forEach(el => { const v = el.value; if (v.trim() && parseFormattedNumber(v) > 0) data[el.name.split('_')[1]] = v; });
+        return data;
+    };
+
+    const loadBudget = (budgetId) => {
+        const budget = (getItem('saved_budgets') || []).find(b => b.id === budgetId);
+        if (!budget) return;
+        document.getElementById('automation-form').querySelectorAll('.automation-input').forEach(inp => {
+            inp.value = budget.data[inp.name.split('_')[1]] || '';
+        });
+        activeAutomationBudgetId = budgetId;
+        updateAutomationSummary(budget.data);
+        showMessage(`Presupuesto '${budget.name}' cargado.`, 'success');
+    };
+    window.loadSelectedBudget = () => { const v = document.getElementById('saved-budgets-select').value; if (v) loadBudget(v); else showMessage('Selecciona un presupuesto.', 'error'); };
+
+    window.saveNewBudget = () => {
+        const name = document.getElementById('new-budget-name').value.trim();
+        if (!name) return showMessage('Ingrese un nombre.', 'error');
+        const data = getFormDataAsBudgetObject();
+        if (!Object.keys(data).length) return showMessage('El presupuesto debe tener valores.', 'error');
+        saveState();
+        let budgets = getItem('saved_budgets') || [];
+        if (budgets.some(b => b.name === name)) return showMessage('Ya existe un presupuesto con ese nombre.', 'error');
+        const nb = { id: crypto.randomUUID(), name, data };
+        budgets.push(nb); setItem('saved_budgets', budgets);
+        renderSavedBudgets(); loadBudget(nb.id);
+        document.getElementById('new-budget-name').value = '';
+        showMessage(`Presupuesto '${name}' guardado.`, 'success');
+    };
+
+    window.deleteSelectedBudget = () => {
+        const id = document.getElementById('saved-budgets-select').value;
+        if (!id) return showMessage('Selecciona un presupuesto.', 'error');
+        const b = (getItem('saved_budgets') || []).find(b => b.id === id);
+        if (!b) return showMessage('Presupuesto no encontrado.', 'error');
+        showConfirmationModal(`¿Eliminar '${b.name}'?`, () => {
+            saveState();
+            setItem('saved_budgets', (getItem('saved_budgets') || []).filter(b => b.id !== id));
+            renderSavedBudgets();
+            if (activeAutomationBudgetId === id) { activeAutomationBudgetId = null; document.getElementById('automation-form').reset(); updateAutomationSummary(null); }
+            showMessage('Presupuesto eliminado.', 'success');
+        });
+    };
+
+    const renderSavedBudgets = () => {
+        const s = document.getElementById('saved-budgets-select');
+        const budgets = getItem('saved_budgets') || [];
+        s.innerHTML = '<option value="" disabled selected>Cargar o eliminar</option>';
+        budgets.forEach(b => s.innerHTML += `<option value="${b.id}">${b.name}</option>`);
+    };
+
+    document.getElementById('automation-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const data = getFormDataAsBudgetObject();
+        if (!activeAutomationBudgetId) return showMessage('No hay un presupuesto cargado.', 'error');
+        saveState();
+        let budgets = getItem('saved_budgets') || [];
+        const idx = budgets.findIndex(b => b.id === activeAutomationBudgetId);
+        if (idx !== -1) {
+            const prev = budgets[idx].data.lastExecution;
+            budgets[idx].data = data;
+            if (prev) budgets[idx].data.lastExecution = prev;
+            setItem('saved_budgets', budgets); showMessage('Presupuesto actualizado.', 'success');
+        }
+        updateAutomationSummary(data);
+    });
+
+    // ── TARJETAS ──────────────────────────────────────────────────
+    document.getElementById('create-card-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const form = e.target;
+        const name = form.name.value, debt = parseFormattedNumber(form.initial_debt.value), type = form.type.value;
+        saveState();
+        let cards = getItem('credit_cards') || [];
+        cards.push({ id: crypto.randomUUID(), name, initialDebt: debt, currentBalance: debt, type, purchases: [], payments: [], paidMonths: {}, createdAt: new Date().toISOString() });
+        setItem('credit_cards', cards); loadData(); showMessage('Tarjeta creada.'); form.reset();
+    });
+
+    window.editPurchase = (cardId, purchaseId) => {
+        const cards = getItem('credit_cards') || [];
+        const card  = cards.find(c => c.id === cardId);
+        if (!card) return;
+        const p = card.purchases.find(p => p.id === purchaseId);
+        if (!p) return;
+        const form = document.getElementById('record-purchase-form');
+        form.dataset.editingCardId     = cardId;
+        form.dataset.editingPurchaseId = purchaseId;
+        form.purchase_card.value     = cardId;
+        form.purchase_concept.value  = p.concept;
+        form.purchase_date.value     = p.date;
+        form.purchase_value.value    = p.value.toLocaleString('es-CO');
+        const isRec = document.getElementById('is-recurring-purchase');
+        isRec.checked = p.isRecurring;
+        document.getElementById('label-purchase-monthly').textContent = p.isRecurring ? 'Cuota Fija Mensual ($)' : 'Plazo (Meses)';
+        form.purchase_monthly.value  = p.isRecurring ? p.monthlyPayment.toLocaleString('es-CO') : p.term.monthly;
+        form.purchase_pocket.value   = p.pocketId || "";
+        document.getElementById('record-purchase-btn').textContent = "Guardar Cambios";
+        form.scrollIntoView({ behavior: 'smooth' });
+    };
+
+    document.getElementById('record-purchase-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const form      = e.target;
+        const cardId    = form.purchase_card.value;
+        const concept   = form.purchase_concept.value;
+        const date      = form.purchase_date.value;
+        const value     = parseFormattedNumber(form.purchase_value.value);
+        const isRecurring = document.getElementById('is-recurring-purchase').checked;
+        const termInput = form.purchase_monthly.value;
+        const pocketId  = form.purchase_pocket.value || null;
+        if (!cardId) return showMessage('Seleccione una tarjeta.', 'error');
+        if (value <= 0) return showMessage('Ingrese un valor válido.', 'error');
+        saveState();
+        let cards = getItem('credit_cards') || [];
+        const editingCardId = form.dataset.editingCardId, editingPurchaseId = form.dataset.editingPurchaseId;
+        let mo = 0, bi = 0, term = null, remBi = 0, remMo = 0;
+        if (isRecurring) { mo = parseFormattedNumber(termInput); bi = mo / 2; }
+        else { const months = parseInt(termInput) || 1; mo = value / months; bi = mo / 2; term = { monthly: months, biWeekly: months * 2 }; remMo = months; remBi = months * 2; }
+
+        if (editingPurchaseId) {
+            const oldCard = cards.find(c => c.id === editingCardId);
+            const pIdx    = oldCard.purchases.findIndex(p => p.id === editingPurchaseId);
+            if (pIdx === -1) return showMessage('Compra no encontrada.', 'error');
+            oldCard.currentBalance -= oldCard.purchases[pIdx].value;
+            const updated = { ...oldCard.purchases[pIdx], concept, date, value, isRecurring, monthlyPayment: mo, biWeeklyPayment: bi, term, remainingMonthly: remMo, remainingBiWeekly: remBi, pocketId };
+            if (editingCardId !== cardId) { oldCard.purchases.splice(pIdx, 1); const nc = cards.find(c => c.id === cardId); nc.purchases.push(updated); nc.currentBalance += value; }
+            else { oldCard.purchases[pIdx] = updated; oldCard.currentBalance += value; }
+            delete form.dataset.editingCardId; delete form.dataset.editingPurchaseId;
+            document.getElementById('record-purchase-btn').textContent = "Registrar Compra";
+            showMessage('Compra actualizada.');
+        } else {
+            const cIdx = cards.findIndex(c => c.id === cardId);
+            if (cIdx === -1) return showMessage('Tarjeta no encontrada.', 'error');
+            cards[cIdx].purchases.push({ id: crypto.randomUUID(), concept, date, value, isRecurring, monthlyPayment: mo, biWeeklyPayment: bi, term, remainingMonthly: remMo, remainingBiWeekly: remBi, pocketId, createdAt: new Date().toISOString() });
+            cards[cIdx].currentBalance += value;
+            showMessage('Compra registrada.');
+        }
+        setItem('credit_cards', cards); loadData(); form.reset();
+        document.getElementById('purchase-date').valueAsDate = new Date();
+    });
+
+    document.getElementById('record-payment-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const form = e.target, cardId = form.payment_card.value, value = parseFormattedNumber(form.payment_value.value);
+        if (!cardId) return showMessage('Seleccione una tarjeta.', 'error');
+        if (value <= 0) return showMessage('Ingrese un valor válido.', 'error');
+        saveState();
+        let cards = getItem('credit_cards') || [];
+        const cIdx = cards.findIndex(c => c.id === cardId);
+        if (cIdx === -1) return showMessage('Tarjeta no encontrada.', 'error');
+        cards[cIdx].payments.push({ id: crypto.randomUUID(), concept: 'Abono Manual', value, date: new Date().toISOString().split('T')[0], createdAt: new Date().toISOString() });
+        cards[cIdx].currentBalance -= value;
+        setItem('credit_cards', cards); loadData(); showMessage('Abono registrado.'); form.reset();
+    });
+
+    window.deletePurchase = (cardId, purchaseId) => {
+        showConfirmationModal('¿Eliminar esta compra? El saldo se ajustará.', () => {
+            saveState();
+            let cards = getItem('credit_cards') || [];
+            const card = cards.find(c => c.id === cardId);
+            if (card) {
+                const pIdx = card.purchases.findIndex(p => p.id === purchaseId);
+                if (pIdx !== -1) { card.currentBalance -= card.purchases[pIdx].value; card.purchases.splice(pIdx, 1); setItem('credit_cards', cards); loadData(); showMessage('Compra eliminada.'); }
+            }
+        });
+    };
+
+    let pendingCardIdToPay = null;
+    window.showMonthlyPaymentModal = (cardId) => {
+        pendingCardIdToPay = cardId;
+        const sel = document.getElementById('installment-pay-period');
+        sel.innerHTML = '';
+        const now = new Date();
+        for (let i = -6; i <= 6; i++) {
+            const d = new Date(now.getFullYear(), now.getMonth()+i, 1);
+            const opt = document.createElement('option');
+            opt.value = `${d.getFullYear()}-${d.getMonth()+1}`;
+            opt.textContent = `${monthNames[d.getMonth()]} ${d.getFullYear()}`;
+            if (i === 0) opt.selected = true;
+            sel.appendChild(opt);
+        }
+        document.getElementById('pay-monthly-installment-modal').classList.remove('hidden');
+    };
+    window.closeMonthlyPayModal = () => { document.getElementById('pay-monthly-installment-modal').classList.add('hidden'); pendingCardIdToPay = null; };
+
+    document.getElementById('monthly-installment-confirm-btn').addEventListener('click', () => {
+        if (!pendingCardIdToPay) return;
+        const cardId     = pendingCardIdToPay;
+        const periodKey  = document.getElementById('installment-pay-period').value;
+        const periodLabel = document.getElementById('installment-pay-period').options[document.getElementById('installment-pay-period').selectedIndex].text;
+        let cards = getItem('credit_cards') || [];
+        const card = cards.find(c => c.id === cardId);
+        if (!card) return;
+        if (!card.paidMonths) card.paidMonths = {};
+        if (card.paidMonths[periodKey]) return showMessage(`La cuota de ${periodLabel} ya fue pagada.`, 'error');
+        saveState();
+        cards = getItem('credit_cards') || [];
+        const cRef = cards.find(c => c.id === cardId);
+        if (!cRef.paidMonths) cRef.paidMonths = {};
+        let total = 0;
+        cRef.purchases.forEach(p => {
+            if (!isNewPurchase(p.date) && (p.remainingMonthly > 0 || p.isRecurring)) {
+                total += p.monthlyPayment;
+                if (!p.isRecurring) { p.remainingMonthly = Math.max(0, p.remainingMonthly - 1); p.remainingBiWeekly = Math.max(0, p.remainingBiWeekly - 2); }
+            }
+        });
+        if (total > 0) {
+            cRef.currentBalance -= total;
+            cRef.payments.push({ id: crypto.randomUUID(), concept: `Pago Cuota Mensual: ${periodLabel}`, value: total, date: new Date().toISOString().split('T')[0], createdAt: new Date().toISOString() });
+            cRef.paidMonths[periodKey] = true; cRef.lastMonthlyPaymentMonth = periodKey;
+            setItem('credit_cards', cards); loadData(); closeMonthlyPayModal();
+            showMessage(`Pago de cuota de ${periodLabel} por ${formatNumber(total)}.`);
+        } else {
+            showMessage('No hay cuotas mensuales pendientes.', 'error');
+        }
+    });
+
+    let cardIdToAdjust = null;
+    window.openAdjustBalanceModal = (cardId) => {
+        cardIdToAdjust = cardId;
+        const cards = getItem('credit_cards') || [];
+        const card  = cards.find(c => c.id === cardId);
+        if (!card) return;
+        document.getElementById('adjust-balance-value').value = card.currentBalance.toLocaleString('es-CO');
+        document.getElementById('adjust-card-balance-modal').classList.remove('hidden');
+    };
+    window.closeAdjustBalanceModal = () => { document.getElementById('adjust-card-balance-modal').classList.add('hidden'); cardIdToAdjust = null; };
+
+    document.getElementById('adjust-balance-confirm-btn').addEventListener('click', () => {
+        if (!cardIdToAdjust) return;
+        const newVal = parseFormattedNumber(document.getElementById('adjust-balance-value').value);
+        saveState();
+        let cards = getItem('credit_cards') || [];
+        const cIdx = cards.findIndex(c => c.id === cardIdToAdjust);
+        if (cIdx !== -1) {
+            const diff = newVal - cards[cIdx].currentBalance;
+            if (Math.abs(diff) > 0.01) {
+                cards[cIdx].payments.push({ id: crypto.randomUUID(), concept: 'Ajuste Manual de Saldo', value: -diff, date: new Date().toISOString().split('T')[0], createdAt: new Date().toISOString() });
+                cards[cIdx].currentBalance = newVal;
+                setItem('credit_cards', cards); loadData(); showMessage('Saldo ajustado.');
+            }
+        }
+        closeAdjustBalanceModal();
+    });
+
+    window.deleteTransaction = (txId) => {
+        showConfirmationModal('¿Eliminar esta transacción? Los saldos se ajustarán.', () => {
+            saveState();
+            let txs = getItem('transactions') || [], accounts = getItem('accounts') || [], pockets = getItem('pockets') || [];
+            const idx = txs.findIndex(t => t.id === txId);
+            if (idx === -1) return showMessage('Transacción no encontrada.', 'error');
+            revertTransaction(txs[idx], accounts, pockets);
+            txs.splice(idx, 1);
+            delete checkedTransactions[txId];
+            setItem('checkedTransactions', checkedTransactions);
+            setItem('accounts', accounts); setItem('pockets', pockets); setItem('transactions', txs);
+            loadData(); showSection(previousSection); showMessage('Transacción eliminada.', 'success');
+        });
+    };
+
+    const revertTransaction = (tx, accounts, pockets) => {
+        const v = tx.value;
+        if (tx.type === 'income') {
+            if (tx.accountId) { const a = accounts.find(a => a.id === tx.accountId); if(a) a.balance -= v; }
+            if (tx.pocketId)  { const p = pockets.find(p => p.id === tx.pocketId);   if(p) p.balance -= v; }
+        } else if (tx.type === 'expense') {
+            if (tx.accountId) { const a = accounts.find(a => a.id === tx.accountId); if(a) a.balance += v; }
+            if (tx.pocketId)  { const p = pockets.find(p => p.id === tx.pocketId);   if(p) p.balance += v; }
+            if (tx.distribution) tx.distribution.forEach(d => { const p = pockets.find(pk => pk.id === d.pocketId); if(p) p.balance += d.value; });
+        } else if (tx.type === 'transfer') {
+            const src = tx.sourceType === 'account' ? accounts.find(a => a.id === tx.sourceId) : pockets.find(p => p.id === tx.sourceId);
+            const dst = tx.destinationType === 'account' ? accounts.find(a => a.id === tx.destinationId) : pockets.find(p => p.id === tx.destinationId);
+            const isVirtual = tx.sourceType === 'account' && src && src.type === 'virtual' && tx.destinationType === 'pocket';
+            if (src && !isVirtual) src.balance += v;
+            if (dst) dst.balance -= v;
+        }
+    };
+
+    window.editItem = (itemId, collectionName) => {
+        let items = (getItem(collectionName) || []).filter(i => i && i.id && i.name);
+        const item = items.find(i => i.id === itemId);
+        if (item) {
+            const form = document.getElementById(`${collectionName.slice(0, -1)}-form`);
+            form.dataset.editingId = itemId;
+            form.name.value = item.name;
+            form.initial_balance.value = item.balance.toLocaleString('es-CO');
+            if (form.type) form.type.value = item.type;
+            showSection(collectionName);
+        } else showMessage('Elemento no encontrado.', 'error');
+    };
+
+    window.deleteItem = (itemId, collectionName) => {
+        const items = getItem(collectionName) || [];
+        const item  = items.find(i => i.id === itemId);
+        if (!item) return showMessage('Elemento no encontrado.', 'error');
+        let canDelete = true, msg = `¿Eliminar "${item.name}"?`;
+        if (['accounts','pockets'].includes(collectionName) && Math.abs(item.balance) > 0.01) { canDelete = false; msg = `No se puede eliminar "${item.name}" porque su saldo no es cero.`; }
+        else if (collectionName === 'credit_cards' && Math.abs(item.currentBalance) > 0.01) { canDelete = false; msg = `No se puede eliminar "${item.name}" porque tiene deuda pendiente.`; }
+        if (!canDelete) return showMessage(msg, 'error');
+        showConfirmationModal(msg, () => {
+            saveState();
+            setItem(collectionName, items.filter(i => i.id !== itemId));
+            loadData(); showMessage('Elemento eliminado.', 'success');
+        });
+    };
+
+    const populateMonthFilter = (selectId, transactions, renderCallback) => {
+        const sel = document.getElementById(selectId);
+        if (!sel) return;
+        sel.innerHTML = '<option value="all">Todos los meses</option>';
+        const months = new Set();
+        transactions.forEach(tx => { const d = new Date(tx.date); months.add(`${d.getFullYear()}-${String(d.getMonth()).padStart(2,'0')}`); });
+        const sorted = Array.from(months).sort().reverse();
+        const nowMY  = `${new Date().getFullYear()}-${String(new Date().getMonth()).padStart(2,'0')}`;
+        sorted.forEach(my => {
+            const [y, m] = my.split('-');
+            const opt = document.createElement('option');
+            opt.value = my; opt.textContent = `${monthNames[parseInt(m)]} ${y}`;
+            if (my === nowMY) opt.selected = true;
+            sel.appendChild(opt);
+        });
+        const filter = () => {
+            const v = sel.value;
+            if (v === 'all') { renderCallback(transactions); return; }
+            const [y, m] = v.split('-');
+            renderCallback(transactions.filter(tx => { const d = new Date(tx.date); return d.getFullYear() === parseInt(y) && d.getMonth() === parseInt(m); }));
+        };
+        sel.onchange = filter; filter();
+    };
+
+    window.showHistoryFor = (type, id) => {
+        showSection('history-view');
+        const accounts = getItem('accounts') || [], pockets = getItem('pockets') || [], txs = getItem('transactions') || [];
+        const item = type === 'account' ? accounts.find(a => a.id === id) : pockets.find(p => p.id === id);
+        if (!item) { showSection(previousSection); return showMessage('Elemento no encontrado.', 'error'); }
+        const related = txs.filter(tx => tx.accountId === id && type === 'account' || tx.pocketId === id && type === 'pocket' || tx.sourceType === type && tx.sourceId === id || tx.destinationType === type && tx.destinationId === id || type === 'pocket' && Array.isArray(tx.distribution) && tx.distribution.some(d => d.pocketId === id));
+        document.getElementById('history-view-title').innerHTML = `Historial de: ${item.name} <span class="text-lg font-semibold text-green-600 ml-4">(${formatNumber(item.balance)})</span>`;
+        populateMonthFilter('history-month-filter', related, (f) => renderTransactions('history-view-list', f, accounts, pockets, item));
+    };
+
+    let distribution = [], totalExpense = 0;
+    document.getElementById('type').addEventListener('change', (e) => {
+        document.getElementById('distribute-expense-btn').classList.toggle('hidden', e.target.value !== 'expense');
+        if (e.target.value !== 'expense' && document.getElementById('multi-pocket-data').value) {
+            document.getElementById('multi-pocket-data').value = '';
+            document.getElementById('distribution-summary-display').classList.add('hidden');
+            document.getElementById('pocket-selector-wrapper').classList.remove('hidden');
+        }
+    });
+
+    document.getElementById('distribute-expense-btn').addEventListener('click', () => {
+        totalExpense = parseFormattedNumber(document.getElementById('value').value);
+        if (totalExpense <= 0) return showMessage('Ingrese un valor válido primero.', 'error');
+        distribution = [];
+        const pockets = getItem('pockets') || [];
+        const mSel = document.getElementById('modal-pocket-select');
+        mSel.innerHTML = '';
+        pockets.forEach(p => mSel.innerHTML += `<option value="${p.id}">${p.name} (${formatNumber(p.balance)})</option>`);
+        document.getElementById('modal-expense-total').textContent = formatNumber(totalExpense);
+        updateDistributionUI();
+        document.getElementById('multi-pocket-modal').classList.remove('hidden');
+    });
+
+    document.getElementById('modal-add-pocket-btn').addEventListener('click', () => {
+        const pocketId = document.getElementById('modal-pocket-select').value;
+        const amount   = parseFormattedNumber(document.getElementById('modal-pocket-amount').value);
+        const pockets  = getItem('pockets') || [];
+        const pocket   = pockets.find(p => p.id === pocketId);
+        if (!pocketId || amount <= 0) return showMessage('Seleccione bolsillo e ingrese monto.', 'error');
+        distribution = distribution.filter(d => d.pocketId !== pocketId);
+        if (amount > pocket.balance && pocket.type !== 'sobregiro') return showMessage('El monto excede el saldo.', 'error');
+        distribution.push({ pocketId, value: amount, name: pocket.name });
+        updateDistributionUI();
+        document.getElementById('modal-pocket-amount').value = '';
+    });
+
+    const updateDistributionUI = () => {
+        const list = document.getElementById('distribution-list');
+        list.innerHTML = '';
+        let covered = 0;
+        distribution.forEach(d => { covered += d.value; list.innerHTML += `<div class="flex justify-between items-center bg-gray-100 p-2 rounded"><span>${d.name}: ${formatNumber(d.value)}</span><button onclick="removeDistributionItem('${d.pocketId}')" class="text-red-500 font-bold">✕</button></div>`; });
+        document.getElementById('modal-amount-covered').textContent   = formatNumber(covered);
+        document.getElementById('modal-amount-remaining').textContent = covered > totalExpense ? '¡Exceso!' : formatNumber(totalExpense - covered);
+        const btn = document.getElementById('modal-confirm-distribution-btn');
+        btn.disabled = distribution.length === 0 || covered > totalExpense;
+    };
+    window.removeDistributionItem = (pocketId) => { distribution = distribution.filter(d => d.pocketId !== pocketId); updateDistributionUI(); };
+
+    document.getElementById('modal-confirm-distribution-btn').addEventListener('click', () => {
+        if (distribution.reduce((s, d) => s + d.value, 0) > totalExpense) return showMessage('La distribución excede el valor del gasto.', 'error');
+        document.getElementById('multi-pocket-data').value = JSON.stringify(distribution);
+        const sc = document.getElementById('summary-content');
+        sc.innerHTML = '<p class="font-bold mb-2 text-gray-700">Resumen de Distribución:</p><div class="space-y-1">' + distribution.map(d => `<div class="flex justify-between items-center text-xs"><span class="text-gray-600">${d.name}</span><span class="font-semibold text-gray-800">${formatNumber(d.value)}</span></div>`).join('') + '</div>';
+        document.getElementById('distribution-summary-display').classList.remove('hidden');
+        document.getElementById('pocket-selector-wrapper').classList.add('hidden');
+        document.getElementById('multi-pocket-modal').classList.add('hidden');
+        showMessage('Distribución confirmada.', 'success');
+    });
+
+    document.getElementById('modal-cancel-distribution-btn').addEventListener('click', () => {
+        document.getElementById('multi-pocket-data').value = '';
+        document.getElementById('distribution-summary-display').classList.add('hidden');
+        document.getElementById('pocket-selector-wrapper').classList.remove('hidden');
+        document.getElementById('multi-pocket-modal').classList.add('hidden');
+    });
+
+    document.getElementById('cancel-distribution-btn').addEventListener('click', () => {
+        document.getElementById('multi-pocket-data').value = '';
+        document.getElementById('distribution-summary-display').classList.add('hidden');
+        document.getElementById('pocket-selector-wrapper').classList.remove('hidden');
+        showMessage('Distribución cancelada.', 'info');
+    });
+
+    window.openEditTransactionModal = (txId) => {
+        const txs = getItem('transactions') || [], tx = txs.find(t => t.id === txId);
+        if (!tx) return showMessage('Movimiento no encontrado.', 'error');
+        const accounts = getItem('accounts') || [], pockets = getItem('pockets') || [];
+        renderTransferOptions(accounts, pockets);
+        const form = document.getElementById('edit-transaction-form');
+        form.querySelector('#edit-tx-id').value = tx.id;
+        form.querySelector('#edit-tx-original-data').value = JSON.stringify(tx);
+        form.querySelector('#edit-concept').value = tx.concept;
+        form.querySelector('#edit-date').value    = tx.date;
+        form.querySelector('#edit-value').value   = tx.value.toLocaleString('es-CO');
+        ['edit-income-expense-fields','edit-transfer-fields','edit-distributed-expense-fields'].forEach(id => document.getElementById(id).classList.add('hidden'));
+        if (Array.isArray(tx.distribution) && tx.distribution.length) {
+            document.getElementById('edit-distributed-expense-fields').classList.remove('hidden');
+        } else if (tx.type === 'transfer') {
+            document.getElementById('edit-transfer-fields').classList.remove('hidden');
+            document.getElementById('edit-transfer-source-account').value = tx.sourceType === 'account' ? tx.sourceId : '';
+            document.getElementById('edit-transfer-source-pocket').value  = tx.sourceType === 'pocket'  ? tx.sourceId : '';
+            document.getElementById('edit-transfer-destination-account').value = tx.destinationType === 'account' ? tx.destinationId : '';
+            document.getElementById('edit-transfer-destination-pocket').value  = tx.destinationType === 'pocket'  ? tx.destinationId : '';
+        } else {
+            document.getElementById('edit-income-expense-fields').classList.remove('hidden');
+            document.getElementById('edit-type-label').textContent = tx.type === 'income' ? 'Ingreso' : 'Gasto';
+            document.getElementById('edit-afecta-cuenta').value   = tx.accountId || '';
+            document.getElementById('edit-afecta-bolsillo').value = tx.pocketId  || '';
+        }
+        document.getElementById('edit-transaction-modal').classList.remove('hidden');
+    };
+
+    document.getElementById('edit-modal-cancel-btn').addEventListener('click', () => document.getElementById('edit-transaction-modal').classList.add('hidden'));
+
+    document.getElementById('edit-transaction-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const form = e.target, txId = form.querySelector('#edit-tx-id').value;
+        const originalTx = JSON.parse(form.querySelector('#edit-tx-original-data').value);
+        saveState();
+        let accounts = getItem('accounts') || [], pockets = getItem('pockets') || [], txs = getItem('transactions') || [];
+        revertTransaction(originalTx, accounts, pockets);
+        let updated = { ...originalTx };
+        try {
+            const newVal  = parseFormattedNumber(form.querySelector('#edit-value').value);
+            const newConc = form.querySelector('#edit-concept').value;
+            const newDate = form.querySelector('#edit-date').value;
+            if (originalTx.type === 'transfer') {
+                const srcAccId  = form.querySelector('#edit-transfer-source-account').value;
+                const srcPockId = form.querySelector('#edit-transfer-source-pocket').value;
+                const dstAccId  = form.querySelector('#edit-transfer-destination-account').value;
+                const dstPockId = form.querySelector('#edit-transfer-destination-pocket').value;
+                const srcs = [srcAccId, srcPockId].filter(Boolean), dsts = [dstAccId, dstPockId].filter(Boolean);
+                if (srcs.length !== 1 || dsts.length !== 1) throw new Error('Debe seleccionar un único origen y destino.');
+                const nSrcId = srcs[0], nSrcType = srcAccId ? 'account' : 'pocket';
+                const nDstId = dsts[0], nDstType = dstAccId ? 'account' : 'pocket';
+                if (nSrcId === nDstId && nSrcType === nDstType) throw new Error('El origen y destino no pueden ser los mismos.');
+                const srcItem = nSrcType === 'account' ? accounts.find(a => a.id === nSrcId) : pockets.find(p => p.id === nSrcId);
+                const dstItem = nDstType === 'account' ? accounts.find(a => a.id === nDstId) : pockets.find(p => p.id === nDstId);
+                if (!srcItem || !dstItem) throw new Error('Origen o destino no encontrados.');
+                updated = { ...updated, concept: newConc, date: newDate, value: newVal, sourceId: nSrcId, sourceType: nSrcType, destinationId: nDstId, destinationType: nDstType };
+            } else {
+                const newAccId  = form.querySelector('#edit-afecta-cuenta')?.value   || originalTx.accountId || null;
+                const newPockId = form.querySelector('#edit-afecta-bolsillo')?.value || originalTx.pocketId  || null;
+                if (!originalTx.distribution && !newAccId && !newPockId) throw new Error('Seleccione al menos una cuenta o bolsillo.');
+                updated = { ...updated, concept: newConc, date: newDate, value: newVal, accountId: newAccId, pocketId: newPockId };
+            }
+            applyTransaction(updated, accounts, pockets);
+            const idx = txs.findIndex(t => t.id === txId);
+            if (idx === -1) throw new Error('No se encontró la transacción para actualizar.');
+            txs[idx] = updated;
+            setItem('accounts', accounts); setItem('pockets', pockets); setItem('transactions', txs);
+            loadData(); showSection(previousSection);
+            document.getElementById('edit-transaction-modal').classList.add('hidden');
+            showMessage('Movimiento actualizado.', 'success');
+        } catch (err) {
+            applyTransaction(originalTx, accounts, pockets);
+            showMessage(err.message, 'error');
+        }
+    });
+
+    const applyTransaction = (tx, accounts, pockets) => {
+        const v = tx.value;
+        if (tx.type === 'income') {
+            if (tx.accountId) { const a = accounts.find(a => a.id === tx.accountId); if(a) a.balance += v; }
+            if (tx.pocketId)  { const p = pockets.find(p => p.id === tx.pocketId);   if(p) p.balance += v; }
+        } else if (tx.type === 'expense') {
+            if (tx.accountId) { const a = accounts.find(a => a.id === tx.accountId); if(a) a.balance -= v; }
+            if (tx.pocketId)  { const p = pockets.find(p => p.id === tx.pocketId);   if(p) p.balance -= v; }
+            if (tx.distribution) tx.distribution.forEach(d => { const p = pockets.find(pk => pk.id === d.pocketId); if(p) p.balance -= d.value; });
+        } else if (tx.type === 'transfer') {
+            const src = tx.sourceType === 'account' ? accounts.find(a => a.id === tx.sourceId) : pockets.find(p => p.id === tx.sourceId);
+            const dst = tx.destinationType === 'account' ? accounts.find(a => a.id === tx.destinationId) : pockets.find(p => p.id === tx.destinationId);
+            const isVirtual = tx.sourceType === 'account' && src && src.type === 'virtual' && tx.destinationType === 'pocket';
+            if (src && !isVirtual) src.balance -= v;
+            if (dst) dst.balance += v;
+        }
+    };
+
+    document.getElementById('register-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const form = e.target;
+        const concept     = form.concept.value, date = form.date.value, type = form.type.value;
+        const value       = parseFormattedNumber(form.value.value);
+        const accountId   = form['afecta-cuenta'].value;
+        const pocketId    = form['afecta-bolsillo'].value;
+        const multiPocket = form['multi-pocket-data'].value;
+        if (!value || value <= 0) return showMessage('El valor debe ser positivo.', 'error');
+        if (!accountId && !pocketId && !multiPocket) return showMessage('Seleccione una cuenta o bolsillo.', 'error');
+        saveState();
+        let accounts = getItem('accounts') || [], pockets = getItem('pockets') || [], txs = getItem('transactions') || [];
+        const tx = { id: crypto.randomUUID(), concept, date, type, value, accountId: accountId || null, pocketId: multiPocket ? null : (pocketId || null), distribution: multiPocket ? JSON.parse(multiPocket) : null, createdAt: new Date().toISOString() };
+        applyTransaction(tx, accounts, pockets);
+        if (tx.accountId) { const a = accounts.find(a => a.id === tx.accountId); if(a) tx.finalAccountBalance = a.balance; }
+        if (tx.pocketId)  { const p = pockets.find(p => p.id === tx.pocketId);   if(p) tx.finalPocketBalance  = p.balance; }
+        txs.push(tx);
+        setItem('accounts', accounts); setItem('pockets', pockets); setItem('transactions', txs);
+        loadData(); showMessage('Movimiento registrado.'); form.reset();
+        document.getElementById('date').value = new Date().toISOString().split('T')[0];
+        document.getElementById('distribution-summary-display').classList.add('hidden');
+        document.getElementById('pocket-selector-wrapper').classList.remove('hidden');
+        document.getElementById('distribute-expense-btn').classList.remove('hidden');
+    });
+
+    // ── INICIO ────────────────────────────────────────────────────
+    window.onload = async () => {
+        try {
+            // PWA Setup
+            const svgIcon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="20" fill="#2c5282"/><text x="50%" y="50%" dominant-baseline="central" text-anchor="middle" font-size="60" fill="white" font-family="Arial, sans-serif">$</text></svg>`;
+            const iconUrl = `data:image/svg+xml;base64,${btoa(svgIcon)}`;
+            const manifest = { name:"Finanzas Personales", short_name:"Finanzas", start_url:".", display:"standalone", background_color:"#f7fafc", theme_color:"#2c5282", icons:[{src:iconUrl,sizes:"192x192",type:"image/svg+xml"}] };
+            const manifestUrl = URL.createObjectURL(new Blob([JSON.stringify(manifest)], {type:'application/json'}));
+            document.getElementById('manifest-placeholder').href = manifestUrl;
+            document.querySelector('link[rel="apple-touch-icon"]').href = iconUrl;
+        } catch(e) { console.error("PWA error:", e); }
+
+        // Cargar datos desde Google Sheets al inicio
+        const overlay    = document.getElementById('loading-overlay');
+        const errMsg     = document.getElementById('loading-error');
+        const retryBtn   = document.getElementById('loading-retry-btn');
+
+        const init = async () => {
+            try {
+                errMsg.classList.add('hidden'); retryBtn.classList.add('hidden');
+                await Storage.getAll();
+                checkedTransactions   = getItem('checkedTransactions')   || {};
+                pocketPaymentsChecked = getItem('pocketPaymentsChecked') || {};
+                const history = getItem('history') || [];
+                if (!history.length) saveState();
+                loadData();
+                document.getElementById('date').value = new Date().toISOString().split('T')[0];
+                renderRegisterOptions(getItem('accounts') || [], getItem('pockets') || []);
+                renderTransferOptions(getItem('accounts') || [], getItem('pockets') || []);
+                applyNumberFormatting('#value, #account-initial-balance, #pocket-initial-balance, #transfer-value, #initial-debt, #purchase-value, #purchase-monthly, #payment-value, #modal-pocket-amount, #edit-value, #adjust-balance-value');
+                overlay.classList.add('hidden');
+            } catch(e) {
+                errMsg.textContent = `Error al conectar con Google Sheets: ${e.message}. Verifica la URL del script y que esté publicado correctamente.`;
+                errMsg.classList.remove('hidden'); retryBtn.classList.remove('hidden');
+            }
+        };
+
+        retryBtn.addEventListener('click', init);
+        await init();
+
+        document.getElementById('modal-cancel-btn').addEventListener('click', closeConfirmationModal);
+        document.getElementById('modal-confirm-btn').addEventListener('click', () => { if (confirmCallback) confirmCallback(); closeConfirmationModal(); });
+        document.getElementById('history-view-back-btn').addEventListener('click', () => showSection(previousSection));
+        document.getElementById('is-recurring-purchase').addEventListener('change', (e) => {
+            document.getElementById('label-purchase-monthly').textContent = e.target.checked ? 'Cuota Fija Mensual ($)' : 'Plazo (Meses)';
+        });
+    };
+    </script>
+</body>
+</html>

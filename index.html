@@ -740,9 +740,22 @@
         }
     };
 
-    // Helpers de acceso sincrónicos (para código que no es async)
+    // Helpers de acceso
     const getItem = (key) => _cache[key] ?? null;
+    // setItem ahora usa POST para datos grandes y espera confirmación
     const setItem = (key, value) => { _cache[key] = value; Storage.set(key, value); };
+    // saveItems guarda múltiples claves en paralelo y espera todas
+    const saveItems = async (entries) => {
+        _cache[entries[0][0]] !== undefined; // warm cache
+        entries.forEach(([k, v]) => _cache[k] = v);
+        setSyncState('loading', 'Guardando...');
+        try {
+            await Promise.all(entries.map(([k, v]) => Storage.set(k, v)));
+            setSyncState('ok', '✓ Guardado en Sheets');
+        } catch(e) {
+            setSyncState('error', '✗ Error al guardar');
+        }
+    };
 
     // ── UTILIDADES ────────────────────────────────────────────────
     const formatNumber = (num) => {

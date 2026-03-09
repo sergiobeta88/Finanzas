@@ -998,10 +998,22 @@
         updateLastModified();
         let history = getItem('history') || [];
         if (history.length >= 10) history = history.slice(1);
+        
+        // Verificar que tenemos datos reales antes de guardar el estado
+        const transactions = getItem('transactions') || [];
+        const accounts     = getItem('accounts')     || [];
+        const pockets      = getItem('pockets')      || [];
+        
+        // No guardar estado si los datos críticos están vacíos (evita sobreescribir con [])
+        if (transactions.length === 0 && accounts.length === 0 && pockets.length === 0) {
+            console.warn('saveState: datos vacíos, omitiendo guardado de historial');
+            return;
+        }
+
         history.push({
-            accounts:              getItem('accounts')              || [],
-            pockets:               getItem('pockets')               || [],
-            transactions:          getItem('transactions')          || [],
+            accounts,
+            pockets,
+            transactions,
             creditCards:           getItem('credit_cards')          || [],
             savedBudgets:          getItem('saved_budgets')         || [],
             checkedTransactions:   getItem('checkedTransactions')   || {},

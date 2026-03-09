@@ -803,22 +803,44 @@
             try {
                 const d = JSON.parse(e.target.result);
                 if (d.accounts && d.pockets && d.transactions && d.creditCards) {
-                    setItem('accounts',            d.accounts);
-                    setItem('pockets',             d.pockets);
-                    setItem('transactions',        d.transactions);
-                    setItem('credit_cards',        d.creditCards);
-                    if (d.savedBudgets)          setItem('saved_budgets',        d.savedBudgets);
-                    if (d.checkedTransactions)   setItem('checkedTransactions',  d.checkedTransactions);
-                    if (d.pocketPaymentsChecked) {
-                        setItem('pocketPaymentsChecked', d.pocketPaymentsChecked);
-                        pocketPaymentsChecked = d.pocketPaymentsChecked;
+                    // Mostrar overlay de carga durante la importación
+                    const overlay  = document.getElementById('loading-overlay');
+                    const errMsg   = document.getElementById('loading-error');
+                    const retryBtn = document.getElementById('loading-retry-btn');
+                    overlay.classList.remove('hidden');
+                    errMsg.classList.add('hidden');
+                    retryBtn.classList.add('hidden');
+                    document.querySelector('#loading-overlay p').textContent = 'Guardando datos en Google Sheets...';
+
+                    // Guardar todos los datos en Sheets y ESPERAR confirmación
+                    const entries = [
+                        ['accounts',     d.accounts],
+                        ['pockets',      d.pockets],
+                        ['transactions', d.transactions],
+                        ['credit_cards', d.creditCards],
+                    ];
+                    if (d.savedBudgets)          entries.push(['saved_budgets',        d.savedBudgets]);
+                    if (d.checkedTransactions)   entries.push(['checkedTransactions',  d.checkedTransactions]);
+                    if (d.pocketPaymentsChecked) entries.push(['pocketPaymentsChecked', d.pocketPaymentsChecked]);
+
+                    // Guardar secuencialmente para no saturar el Apps Script
+                    for (const [key, value] of entries) {
+                        _cache[key] = value;
+                        await Storage.set(key, value);
                     }
+
+                    if (d.pocketPaymentsChecked) pocketPaymentsChecked = d.pocketPaymentsChecked;
+
+                    overlay.classList.add('hidden');
                     loadData();
-                    showMessage('Datos importados con éxito.', 'success');
+                    showMessage('Datos importados y guardados en Google Sheets con éxito.', 'success');
                 } else {
                     showMessage('Archivo de respaldo no válido.', 'error');
                 }
-            } catch (err) { showMessage('Error al procesar el archivo.', 'error'); }
+            } catch (err) {
+                console.error(err);
+                showMessage('Error al procesar el archivo.', 'error');
+            }
         };
         reader.readAsText(file);
     }

@@ -698,12 +698,15 @@
             }
         },
 
-        // FIX: escritura individual, sin llamar a setSyncState internamente
-        // para evitar conflictos con el estado de la UI cuando se llama desde saveAllPending.
+        // FIX CORS: usar text/plain como Content-Type evita el preflight OPTIONS
+        // que Apps Script no soporta. El body sigue siendo JSON pero como string plano.
         async _rawSet(key, value) {
+            const body = JSON.stringify({ action: 'set', key, value: JSON.stringify(value) });
             const r = await fetch(SCRIPT_URL, {
                 method: 'POST',
-                body: JSON.stringify({ action: 'set', key, value: JSON.stringify(value) })
+                // NO poner headers: {'Content-Type': 'application/json'}
+                // text/plain es el default y no dispara preflight CORS
+                body: body
             });
             const json = await r.json();
             if (!json.success) throw new Error(`Error al guardar ${key}`);

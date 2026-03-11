@@ -721,36 +721,32 @@
             }
         },
 
-        // ✅ NUEVO: _rawBatch — envía todas las claves en UNA sola llamada HTTP usando setBatch
-        // CORS FIX: NO se pasan headers → browser usa text/plain implícito → sin preflight OPTIONS
-        // El body es un string JSON válido que Apps Script parsea correctamente con JSON.parse()
+        // ✅ _rawBatch — guarda múltiples claves secuencialmente usando _rawSet
+        // CORS FIX DEFINITIVO: setBatch via POST body JSON dispara preflight en Chrome
+        // independientemente del tamaño. La única forma confiable con Apps Script es
+        // usar POST con Blob text/plain (mismo truco que _rawSet) por cada clave.
+        // Para lotes grandes usamos paralelismo controlado (4 en paralelo) para velocidad.
         async _rawBatch(entries) {
-            const batch = entries.map(([k, v]) => ({
-                key: k,
-                value: JSON.stringify(v)
-            }));
-            // ⚠️ NO agregar { headers: { 'Content-Type': ... } }
-            // Sin headers explícitos → Content-Type: text/plain → sin preflight CORS
-            const body = JSON.stringify({ action: 'setBatch', batch });
-            const r = await fetch(SCRIPT_URL, { method: 'POST', body });
-            // Google Apps Script hace redirect 302 antes de responder.
-            // fetch() sigue el redirect automáticamente y el status final es 200.
-            // Pero si la respuesta no es JSON válido, lanzamos error descriptivo.
-            let json;
-            try { json = await r.json(); }
-            catch(e) { throw new Error(`Respuesta inválida del servidor (no es JSON). Status: ${r.status}`); }
-            if (!json.success) throw new Error(`Error en setBatch: ${json.message || 'desconocido'}`);
-            return json;
+            const CONCURRENCY = 4;
+            for (let i = 0; i < entries.length; i += CONCURRENCY) {
+                const chunk = entries.slice(i, i + CONCURRENCY);
+                await Promise.all(chunk.map(([k, v]) => this._rawSet(k, v)));
+            }
         },
 
-        // ✅ NUEVO: saveBatch — método público para importación masiva
-        async saveBatch(entries) {
+        // ✅ NUEVO: saveBatch — método público para importación masiva con progreso
+        async saveBatch(entries, onProgress) {
             entries.forEach(([k, v]) => { _cache[k] = v; });
             setSyncState('loading', 'Importando datos...');
             await _saveQueue;
             try {
-                const result = await this._rawBatch(entries);
-                setSyncState('ok', `✓ ${result.saved || entries.length} claves guardadas`);
+                // Guardar una por una con callback de progreso
+                for (let i = 0; i < entries.length; i++) {
+                    const [k, v] = entries[i];
+                    await this._rawSet(k, v);
+                    if (onProgress) onProgress(i + 1, entries.length, k);
+                }
+                setSyncState('ok', `✓ ${entries.length} claves guardadas`);
             } catch(e) {
                 setSyncState('error', '✗ Error al importar');
                 console.error('saveBatch error:', e);
@@ -858,8 +854,10 @@
                 if (d.checkedTransactions)   entries.push(['checkedTransactions',    d.checkedTransactions]);
                 if (d.pocketPaymentsChecked) entries.push(['pocketPaymentsChecked',  d.pocketPaymentsChecked]);
 
-                // ✅ Una sola llamada HTTP con setBatch
-                await Storage.saveBatch(entries);
+                // ✅ Guardar con progreso visible — una clave a la vez, sin CORS
+                await Storage.saveBatch(entries, (done, total, key) => {
+                    statusP.textContent = `Guardando en Sheets... (${done}/${total}): ${key}`;
+                });
 
                 if (d.pocketPaymentsChecked) pocketPaymentsChecked = d.pocketPaymentsChecked;
 

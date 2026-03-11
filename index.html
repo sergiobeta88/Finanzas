@@ -8,7 +8,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="apple-touch-icon" href="">
     <link rel="manifest" id="manifest-placeholder">
-    <title>Gestión de Finanzas Personales V2.1</title>
+    <title>Gestión de Finanzas Personales V2.2</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -33,7 +33,6 @@
             transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
         }
         .notification-hidden { transform: translateY(-100%) translateX(-50%); opacity: 0; }
-        
         #sync-indicator {
             position: fixed; bottom: 16px; right: 16px;
             z-index: 200; display: flex; align-items: center; gap: 8px;
@@ -48,7 +47,6 @@
         #sync-dot.error { background: #ef4444; }
         #sync-dot.loading { background: #3b82f6; animation: pulse 1s infinite; }
         @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
-
         #loading-overlay {
             position: fixed; inset: 0; background: rgba(255,255,255,0.95);
             display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -75,7 +73,7 @@
 
     <div class="max-w-4xl mx-auto p-4 md:p-8">
         <header class="bg-white rounded-lg shadow-xl p-4 sticky top-4 z-50">
-            <h1 class="text-3xl md:text-4xl font-extrabold text-center text-blue-800">Finanzas Personales V2.1</h1>
+            <h1 class="text-3xl md:text-4xl font-extrabold text-center text-blue-800">Finanzas Personales V2.2</h1>
             <nav id="nav-links" class="flex justify-around items-center mt-4 p-2 bg-gray-800 rounded-lg shadow-inner">
                 <button onclick="showSection('dashboard')" data-section="dashboard" class="flex-1 text-center py-2 px-1 text-xs md:text-base font-semibold text-gray-400 hover:text-white hover:bg-gray-700 transition rounded-lg bg-gray-700">Dashboard</button>
                 <button onclick="showSection('register')" data-section="register" class="flex-1 text-center py-2 px-1 text-xs md:text-base font-semibold text-gray-400 hover:text-white hover:bg-gray-700 transition rounded-lg">Registro</button>
@@ -512,7 +510,7 @@
                     </div>
                     <div>
                         <h3 class="text-xl font-semibold text-blue-700">5. Exportar/Importar</h3>
-                        <p class="text-gray-600">Puedes exportar todos tus datos a un archivo JSON como respaldo adicional.</p>
+                        <p class="text-gray-600">Puedes exportar todos tus datos a un archivo JSON como respaldo. La importación usa una sola llamada optimizada (setBatch) para guardar todo de forma confiable en Google Sheets.</p>
                     </div>
                 </div>
             </section>
@@ -663,7 +661,6 @@
     const syncDot       = document.getElementById('sync-dot');
     const syncText      = document.getElementById('sync-text');
     let syncTimer = null;
-    // Cola de operaciones para evitar escrituras concurrentes en Sheets
     let _saveQueue = Promise.resolve();
 
     const setSyncState = (state, msg) => {
@@ -678,11 +675,6 @@
     };
 
     // ── CAPA DE ALMACENAMIENTO ────────────────────────────────────
-    // CORS FIX DEFINITIVO:
-    // - Lecturas: siempre GET (sin CORS)
-    // - Escrituras: POST sin Content-Type header → browser usa text/plain
-    //   text/plain NO dispara preflight OPTIONS → Apps Script lo recibe sin problemas
-    // - Cola (_saveQueue) garantiza escrituras secuenciales (Apps Script es single-thread)
     const Storage = {
         async get(key) {
             if (_cache[key] !== undefined) return _cache[key];
@@ -698,7 +690,6 @@
             } catch(e) { console.error('Storage.get error:', e); return null; }
         },
 
-        // POST sin headers = Content-Type: text/plain implícito = sin preflight CORS
         async _rawSet(key, value) {
             const body = JSON.stringify({ action: 'set', key, value: JSON.stringify(value) });
             const r = await fetch(SCRIPT_URL, { method: 'POST', body });
@@ -712,22 +703,45 @@
             return _saveQueue;
         },
 
-        // saveMultiple: guarda secuencialmente y retorna una promesa
-        // que se resuelve SOLO cuando TODAS las escrituras terminaron.
-        // Así el caller puede hacer "await Storage.saveMultiple(...)" con garantía.
+        // ✅ MEJORA: saveMultiple ahora usa setBatch internamente (una sola llamada HTTP)
         async saveMultiple(entries) {
             entries.forEach(([k, v]) => { _cache[k] = v; });
             setSyncState('loading', 'Guardando...');
-            // Esperar a que la cola actual termine antes de agregar nuevas escrituras
             await _saveQueue;
             try {
-                for (const [k, v] of entries) {
-                    await this._rawSet(k, v);
-                }
+                await this._rawBatch(entries);
                 setSyncState('ok', '✓ Guardado en Sheets');
             } catch(e) {
                 setSyncState('error', '✗ Error al guardar');
                 console.error('saveMultiple error:', e);
+                throw e;
+            }
+        },
+
+        // ✅ NUEVO: _rawBatch — envía todas las claves en UNA sola llamada HTTP usando setBatch
+        async _rawBatch(entries) {
+            const batch = entries.map(([k, v]) => ({
+                key: k,
+                value: JSON.stringify(v)
+            }));
+            const body = JSON.stringify({ action: 'setBatch', batch });
+            const r = await fetch(SCRIPT_URL, { method: 'POST', body });
+            const json = await r.json();
+            if (!json.success) throw new Error(`Error en setBatch: ${json.message || 'desconocido'}`);
+            return json;
+        },
+
+        // ✅ NUEVO: saveBatch — método público para importación masiva
+        async saveBatch(entries) {
+            entries.forEach(([k, v]) => { _cache[k] = v; });
+            setSyncState('loading', 'Importando datos...');
+            await _saveQueue;
+            try {
+                const result = await this._rawBatch(entries);
+                setSyncState('ok', `✓ ${result.saved || entries.length} claves guardadas`);
+            } catch(e) {
+                setSyncState('error', '✗ Error al importar');
+                console.error('saveBatch error:', e);
                 throw e;
             }
         },
@@ -798,43 +812,61 @@
     }
     window.exportDataToJson = exportDataToJson;
 
+    // ✅ MEJORA PRINCIPAL: importDataFromJson usa saveBatch (una sola llamada HTTP)
     async function importDataFromJson(event) {
         const file = event.target.files[0];
         if (!file) return;
+
+        // Limpiar el input para permitir reimportar el mismo archivo si es necesario
+        event.target.value = '';
+
         const reader = new FileReader();
         reader.onload = async (e) => {
             try {
                 const d = JSON.parse(e.target.result);
-                if (d.accounts && d.pockets && d.transactions && d.creditCards) {
-                    const overlay  = document.getElementById('loading-overlay');
-                    const statusP  = document.getElementById('loading-status-text');
-                    overlay.classList.remove('hidden');
-                    statusP.textContent = 'Guardando datos en Google Sheets...';
 
-                    const entries = [
-                        ['accounts',     d.accounts],
-                        ['pockets',      d.pockets],
-                        ['transactions', d.transactions],
-                        ['credit_cards', d.creditCards],
-                    ];
-                    if (d.savedBudgets)          entries.push(['saved_budgets',          d.savedBudgets]);
-                    if (d.checkedTransactions)   entries.push(['checkedTransactions',    d.checkedTransactions]);
-                    if (d.pocketPaymentsChecked) entries.push(['pocketPaymentsChecked', d.pocketPaymentsChecked]);
-
-                    await Storage.saveMultiple(entries);
-
-                    if (d.pocketPaymentsChecked) pocketPaymentsChecked = d.pocketPaymentsChecked;
-                    overlay.classList.add('hidden');
-                    loadData();
-                    showMessage('Datos importados y guardados en Google Sheets con éxito.', 'success');
-                } else {
-                    showMessage('Archivo de respaldo no válido.', 'error');
+                if (!d.accounts || !d.pockets || !d.transactions || !d.creditCards) {
+                    return showMessage('Archivo de respaldo no válido: faltan campos obligatorios.', 'error');
                 }
+
+                const overlay = document.getElementById('loading-overlay');
+                const statusP = document.getElementById('loading-status-text');
+                overlay.classList.remove('hidden');
+                statusP.textContent = 'Guardando todos los datos en Google Sheets...';
+                statusP.classList.remove('text-green-600');
+
+                // Construir todas las entradas
+                const entries = [
+                    ['accounts',     d.accounts],
+                    ['pockets',      d.pockets],
+                    ['transactions', d.transactions],
+                    ['credit_cards', d.creditCards],
+                ];
+                if (d.savedBudgets)          entries.push(['saved_budgets',          d.savedBudgets]);
+                if (d.checkedTransactions)   entries.push(['checkedTransactions',    d.checkedTransactions]);
+                if (d.pocketPaymentsChecked) entries.push(['pocketPaymentsChecked',  d.pocketPaymentsChecked]);
+
+                // ✅ Una sola llamada HTTP con setBatch
+                await Storage.saveBatch(entries);
+
+                if (d.pocketPaymentsChecked) pocketPaymentsChecked = d.pocketPaymentsChecked;
+
+                statusP.textContent = '✓ Importación completada';
+                statusP.classList.add('text-green-600');
+                await new Promise(r => setTimeout(r, 800));
+
+                overlay.classList.add('hidden');
+                statusP.classList.remove('text-green-600');
+                loadData();
+                showMessage('Datos importados y guardados en Google Sheets con éxito.', 'success');
+
             } catch (err) {
-                console.error(err);
-                showMessage('Error al procesar el archivo.', 'error');
+                console.error('importDataFromJson error:', err);
+                document.getElementById('loading-overlay').classList.add('hidden');
+                showMessage(`Error al importar: ${err.message}`, 'error');
             }
         };
+        reader.onerror = () => showMessage('Error al leer el archivo.', 'error');
         reader.readAsText(file);
     }
     window.importDataFromJson = importDataFromJson;
@@ -914,7 +946,6 @@
         searchInput.addEventListener('focus', showAllOptions);
         searchInput.addEventListener('input', (ev) => filterOptions(ev.target.value));
         select.addEventListener('change', (evt) => {
-            // Evitar loop: solo procesar eventos de usuario, no los sintéticos
             if (!evt.isTrusted) return;
             const sel = select.options[select.selectedIndex];
             if (sel) { searchInput.value = sel.textContent.split('(')[0].trim(); select.classList.add('hidden'); }
@@ -990,10 +1021,6 @@
         document.getElementById('last-modified-date').textContent = `Última modificación: ${str}`;
     };
 
-    // FIX: history y redoHistory solo viven en memoria (_cache), NUNCA se guardan en Sheets.
-    // Razón: guardarlos causaba que snapshots con datos vacíos sobreescribieran
-    // transacciones reales en Sheets debido al orden no garantizado con no-cors.
-    // El deshacer/rehacer funciona perfectamente dentro de la misma sesión.
     const saveState = () => {
         const transactions = getItem('transactions') || [];
         const accounts     = getItem('accounts')     || [];
@@ -1013,7 +1040,6 @@
             checkedTransactions:   JSON.parse(JSON.stringify(_cache['checkedTransactions'] || {})),
             pocketPaymentsChecked: JSON.parse(JSON.stringify(pocketPaymentsChecked))
         });
-        // Solo en memoria, nunca en Sheets
         _cache['history']    = history;
         _cache['redoHistory'] = [];
         updateUndoRedoButtonStates();
@@ -1033,7 +1059,6 @@
         const cur  = history.pop();
         const prev = history[history.length - 1];
         redoHistory.push(cur);
-        // Restaurar en caché
         _cache['accounts']             = prev.accounts;
         _cache['pockets']              = prev.pockets;
         _cache['transactions']         = prev.transactions;
@@ -1044,7 +1069,6 @@
         _cache['pocketPaymentsChecked'] = pocketPaymentsChecked;
         _cache['history']    = history;
         _cache['redoHistory'] = redoHistory;
-        // Guardar solo los datos reales en Sheets (no history/redo)
         Storage.saveMultiple([
             ['accounts',             prev.accounts],
             ['pockets',              prev.pockets],
@@ -1527,7 +1551,6 @@
         });
 
         if (totalDeducted > 0) {
-            // FIX: guardar pockets Y transactions juntos en un solo bloque secuencial
             Storage.saveMultiple([['pockets', pockets], ['transactions', transactions]]);
             _cache['pockets'] = pockets; _cache['transactions'] = transactions;
             loadData(); showMessage(`Se reservaron ${formatNumber(totalDeducted)}. ${summary.join(', ')}.`);
@@ -2287,7 +2310,6 @@
         }
     };
 
-    // FIX: register-form ahora guarda accounts + pockets + transactions juntos
     document.getElementById('register-form').addEventListener('submit', (e) => {
         e.preventDefault();
         const form = e.target;
@@ -2305,7 +2327,6 @@
         if (tx.accountId) { const a = accounts.find(a => a.id === tx.accountId); if(a) tx.finalAccountBalance = a.balance; }
         if (tx.pocketId)  { const p = pockets.find(p => p.id === tx.pocketId);   if(p) tx.finalPocketBalance  = p.balance; }
         txs.push(tx);
-        // FIX CRÍTICO: guardar los tres de forma secuencial en un solo bloque
         _cache['accounts'] = accounts; _cache['pockets'] = pockets; _cache['transactions'] = txs;
         Storage.saveMultiple([['accounts', accounts], ['pockets', pockets], ['transactions', txs]]);
         loadData(); showMessage('Movimiento registrado.'); form.reset();
@@ -2335,28 +2356,24 @@
             try {
                 errMsg.classList.add('hidden'); retryBtn.classList.add('hidden');
                 statusP.textContent = 'Cargando datos desde Google Sheets...';
+                statusP.classList.remove('text-green-600');
 
                 await Storage.getAll();
 
                 checkedTransactions   = getItem('checkedTransactions')   || {};
                 pocketPaymentsChecked = getItem('pocketPaymentsChecked') || {};
 
-                // Limpiar claves legacy de history/redo que ya no se usan en Sheets
                 delete _cache['history'];
                 delete _cache['redoHistory'];
 
-                // FIX: mostrar mensaje de éxito ANTES de ocultar el overlay
-                // para que el usuario lo vea aunque sea brevemente
                 statusP.textContent = '✓ Datos cargados desde Sheets';
                 statusP.classList.add('text-green-600');
-                await new Promise(r => setTimeout(r, 800)); // pequeña pausa para que se vea
+                await new Promise(r => setTimeout(r, 800));
 
-                // Inicializar history en memoria sin guardar en Sheets
-                // (evita snapshot vacío que sobreescribiría datos reales)
                 if (!_cache['history'] || !_cache['history'].length) {
                     _cache['history']    = [];
                     _cache['redoHistory'] = [];
-                    saveState(); // primer snapshot con los datos ya cargados
+                    saveState();
                 }
                 loadData();
 
@@ -2370,6 +2387,7 @@
                 showMessage('✓ Datos cargados desde Google Sheets', 'success');
             } catch(e) {
                 statusP.textContent = 'Error al conectar con Google Sheets';
+                statusP.classList.remove('text-green-600');
                 errMsg.textContent = `${e.message}. Verifica la URL del script y que esté publicado correctamente.`;
                 errMsg.classList.remove('hidden'); retryBtn.classList.remove('hidden');
             }

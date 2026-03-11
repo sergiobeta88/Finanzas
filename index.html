@@ -1010,8 +1010,10 @@
         document.getElementById('last-modified-date').textContent = `Última modificación: ${str}`;
     };
 
-    // FIX: saveState ahora guarda todo en un solo bloque secuencial via saveMultiple
-    // para evitar escrituras paralelas que confunden a Google Apps Script.
+    // FIX: history y redoHistory solo viven en memoria (_cache), NUNCA se guardan en Sheets.
+    // Razón: guardarlos causaba que snapshots con datos vacíos sobreescribieran
+    // transacciones reales en Sheets debido al orden no garantizado con no-cors.
+    // El deshacer/rehacer funciona perfectamente dentro de la misma sesión.
     const saveState = () => {
         const transactions = getItem('transactions') || [];
         const accounts     = getItem('accounts')     || [];
@@ -1019,22 +1021,21 @@
 
         updateLastModified();
 
-        let history = getItem('history') || [];
-        if (history.length >= 10) history = history.slice(1);
+        let history = _cache['history'] || [];
+        if (history.length >= 20) history = history.slice(1);
 
         history.push({
             accounts:              JSON.parse(JSON.stringify(accounts)),
             pockets:               JSON.parse(JSON.stringify(pockets)),
             transactions:          JSON.parse(JSON.stringify(transactions)),
-            creditCards:           JSON.parse(JSON.stringify(getItem('credit_cards') || [])),
-            savedBudgets:          JSON.parse(JSON.stringify(getItem('saved_budgets') || [])),
-            checkedTransactions:   JSON.parse(JSON.stringify(getItem('checkedTransactions') || {})),
+            creditCards:           JSON.parse(JSON.stringify(_cache['credit_cards'] || [])),
+            savedBudgets:          JSON.parse(JSON.stringify(_cache['saved_budgets'] || [])),
+            checkedTransactions:   JSON.parse(JSON.stringify(_cache['checkedTransactions'] || {})),
             pocketPaymentsChecked: JSON.parse(JSON.stringify(pocketPaymentsChecked))
         });
-        _cache['history'] = history;
+        // Solo en memoria, nunca en Sheets
+        _cache['history']    = history;
         _cache['redoHistory'] = [];
-        Storage.set('history', history);
-        Storage.set('redoHistory', []);
         updateUndoRedoButtonStates();
     };
 
@@ -1046,56 +1047,64 @@
     };
 
     window.undoLastAction = () => {
-        let history = getItem('history') || [];
-        let redoHistory = getItem('redoHistory') || [];
+        let history     = _cache['history']    || [];
+        let redoHistory = _cache['redoHistory'] || [];
         if (history.length <= 1) return showMessage('No hay acciones para deshacer.', 'error');
-        const cur = history.pop();
+        const cur  = history.pop();
         const prev = history[history.length - 1];
         redoHistory.push(cur);
-        _cache['accounts']            = prev.accounts;
-        _cache['pockets']             = prev.pockets;
-        _cache['transactions']        = prev.transactions;
-        _cache['credit_cards']        = prev.creditCards;
-        _cache['saved_budgets']       = prev.savedBudgets;
-        _cache['checkedTransactions'] = prev.checkedTransactions;
-        pocketPaymentsChecked         = prev.pocketPaymentsChecked || {};
+        // Restaurar en caché
+        _cache['accounts']             = prev.accounts;
+        _cache['pockets']              = prev.pockets;
+        _cache['transactions']         = prev.transactions;
+        _cache['credit_cards']         = prev.creditCards;
+        _cache['saved_budgets']        = prev.savedBudgets;
+        _cache['checkedTransactions']  = prev.checkedTransactions;
+        pocketPaymentsChecked          = prev.pocketPaymentsChecked || {};
         _cache['pocketPaymentsChecked'] = pocketPaymentsChecked;
         _cache['history']    = history;
         _cache['redoHistory'] = redoHistory;
+        // Guardar solo los datos reales en Sheets (no history/redo)
         Storage.saveMultiple([
-            ['accounts', prev.accounts], ['pockets', prev.pockets],
-            ['transactions', prev.transactions], ['credit_cards', prev.creditCards],
-            ['saved_budgets', prev.savedBudgets], ['checkedTransactions', prev.checkedTransactions],
-            ['pocketPaymentsChecked', pocketPaymentsChecked],
-            ['history', history], ['redoHistory', redoHistory]
+            ['accounts',             prev.accounts],
+            ['pockets',              prev.pockets],
+            ['transactions',         prev.transactions],
+            ['credit_cards',         prev.creditCards],
+            ['saved_budgets',        prev.savedBudgets],
+            ['checkedTransactions',  prev.checkedTransactions],
+            ['pocketPaymentsChecked', pocketPaymentsChecked]
         ]);
-        loadData(); showMessage('Última acción deshecha.', 'success');
+        loadData();
+        showMessage('Última acción deshecha.', 'success');
     };
 
     window.redoLastAction = () => {
-        let history = getItem('history') || [];
-        let redoHistory = getItem('redoHistory') || [];
+        let history     = _cache['history']    || [];
+        let redoHistory = _cache['redoHistory'] || [];
         if (!redoHistory.length) return showMessage('No hay acciones para rehacer.', 'error');
         const state = redoHistory.pop();
         history.push(state);
-        _cache['accounts']            = state.accounts;
-        _cache['pockets']             = state.pockets;
-        _cache['transactions']        = state.transactions;
-        _cache['credit_cards']        = state.creditCards;
-        _cache['saved_budgets']       = state.savedBudgets;
-        _cache['checkedTransactions'] = state.checkedTransactions;
-        pocketPaymentsChecked         = state.pocketPaymentsChecked || {};
+        _cache['accounts']             = state.accounts;
+        _cache['pockets']              = state.pockets;
+        _cache['transactions']         = state.transactions;
+        _cache['credit_cards']         = state.creditCards;
+        _cache['saved_budgets']        = state.savedBudgets;
+        _cache['checkedTransactions']  = state.checkedTransactions;
+        pocketPaymentsChecked          = state.pocketPaymentsChecked || {};
         _cache['pocketPaymentsChecked'] = pocketPaymentsChecked;
         _cache['history']    = history;
         _cache['redoHistory'] = redoHistory;
         Storage.saveMultiple([
-            ['accounts', state.accounts], ['pockets', state.pockets],
-            ['transactions', state.transactions], ['credit_cards', state.creditCards],
-            ['saved_budgets', state.savedBudgets], ['checkedTransactions', state.checkedTransactions],
-            ['pocketPaymentsChecked', pocketPaymentsChecked],
-            ['history', history], ['redoHistory', redoHistory]
+            ['accounts',             state.accounts],
+            ['pockets',              state.pockets],
+            ['transactions',         state.transactions],
+            ['credit_cards',         state.creditCards],
+            ['saved_budgets',        state.savedBudgets],
+            ['checkedTransactions',  state.checkedTransactions],
+            ['pocketPaymentsChecked', pocketPaymentsChecked]
         ]);
-        loadData(); showMessage('Acción rehecha.', 'success');
+        loadData();
+        showMessage('Acción rehecha.', 'success');
     };
 
     const loadData = () => {
@@ -2352,14 +2361,23 @@
                 checkedTransactions   = getItem('checkedTransactions')   || {};
                 pocketPaymentsChecked = getItem('pocketPaymentsChecked') || {};
 
+                // Limpiar claves legacy de history/redo que ya no se usan en Sheets
+                delete _cache['history'];
+                delete _cache['redoHistory'];
+
                 // FIX: mostrar mensaje de éxito ANTES de ocultar el overlay
                 // para que el usuario lo vea aunque sea brevemente
                 statusP.textContent = '✓ Datos cargados desde Sheets';
                 statusP.classList.add('text-green-600');
                 await new Promise(r => setTimeout(r, 800)); // pequeña pausa para que se vea
 
-                const history = getItem('history') || [];
-                if (!history.length) saveState();
+                // Inicializar history en memoria sin guardar en Sheets
+                // (evita snapshot vacío que sobreescribiría datos reales)
+                if (!_cache['history'] || !_cache['history'].length) {
+                    _cache['history']    = [];
+                    _cache['redoHistory'] = [];
+                    saveState(); // primer snapshot con los datos ya cargados
+                }
                 loadData();
 
                 document.getElementById('date').value = new Date().toISOString().split('T')[0];

@@ -678,8 +678,10 @@
     };
 
     // ── CAPA DE ALMACENAMIENTO ────────────────────────────────────
-    // FIX PRINCIPAL: todas las escrituras se encolan para ser secuenciales.
-    // Esto evita que Google Apps Script (single-threaded) descarte peticiones.
+    // ESTRATEGIA CORS: usar siempre GET para todo (lecturas Y escrituras).
+    // GET no tiene restricciones CORS. El Apps Script ya soporta todas las
+    // acciones via parámetros GET. Para valores grandes usamos POST sin headers
+    // (text/plain no dispara preflight). La cola garantiza orden secuencial.
     const Storage = {
         async get(key) {
             if (_cache[key] !== undefined) return _cache[key];
@@ -698,50 +700,46 @@
             }
         },
 
-        // FIX CORS: mode:'no-cors' evita el bloqueo del navegador con Apps Script.
-        // Con no-cors no podemos leer la respuesta (opaque), pero la escritura SÍ llega.
-        // Para leer usamos siempre GET que no tiene problema de CORS.
+        // Escritura via GET para valores pequeños, POST sin Content-Type para grandes.
+        // POST sin Content-Type header usa text/plain implícito → NO dispara preflight CORS.
         async _rawSet(key, value) {
-            const body = JSON.stringify({ action: 'set', key, value: JSON.stringify(value) });
-            await fetch(SCRIPT_URL, {
-                method: 'POST',
-                mode: 'no-cors',
-                body: body
-            });
-            // Con no-cors la respuesta es opaque (no podemos leerla),
-            // pero Apps Script recibió y procesó el dato correctamente.
+            const valStr = JSON.stringify(value);
+            const getUrl = `${SCRIPT_URL}?action=set&key=${encodeURIComponent(key)}&value=${encodeURIComponent(valStr)}`;
+            
+            // Si la URL es manejable (<2000 chars), usar GET (garantizado sin CORS)
+            if (getUrl.length < 2000) {
+                const r = await fetch(getUrl);
+                const json = await r.json();
+                if (!json.success) throw new Error(`Error set ${key}`);
+            } else {
+                // Valor grande: POST con body text/plain (no dispara preflight)
+                const body = JSON.stringify({ action: 'set', key, value: valStr });
+                const r = await fetch(SCRIPT_URL, { method: 'POST', body });
+                const json = await r.json();
+                if (!json.success) throw new Error(`Error set ${key}`);
+            }
         },
 
-        // FIX: setItem ahora encola la escritura en lugar de dispararla sin await.
-        // La cola garantiza orden estricto: espera a que termine antes de la siguiente.
         set(key, value) {
             _cache[key] = value;
             _saveQueue = _saveQueue.then(async () => {
-                try {
-                    await this._rawSet(key, value);
-                } catch(e) {
-                    console.error('Storage.set error:', e);
-                    throw e;
-                }
+                try { await this._rawSet(key, value); }
+                catch(e) { console.error('Storage.set error:', e); }
             });
             return _saveQueue;
         },
 
-        // Guarda múltiples claves secuencialmente y espera a que todas terminen.
-        // Muestra el indicador una sola vez para todo el bloque.
-        async saveMultiple(entries) {
+        // Guarda múltiples claves secuencialmente con indicador unificado.
+        saveMultiple(entries) {
             entries.forEach(([k, v]) => { _cache[k] = v; });
             setSyncState('loading', 'Guardando...');
             _saveQueue = _saveQueue.then(async () => {
                 try {
                     for (const [k, v] of entries) {
                         await this._rawSet(k, v);
-                        // Pequeña pausa entre escrituras para no saturar Apps Script
-                        await new Promise(r => setTimeout(r, 200));
                     }
                     setSyncState('ok', '✓ Guardado en Sheets');
                 } catch(e) {
-                    // Con no-cors los errores reales de red todavía se capturan
                     setSyncState('error', '✗ Error al guardar');
                     console.error('saveMultiple error:', e);
                 }
@@ -761,25 +759,20 @@
                     return _cache;
                 }
                 throw new Error('getAll no retornó success');
-            } catch(e) {
-                throw e;
-            }
+            } catch(e) { throw e; }
         }
     };
 
     // ── HELPERS DE ACCESO AL CACHÉ ────────────────────────────────
     const getItem = (key) => _cache[key] ?? null;
 
-    // FIX: setItem actualiza el caché Y encola la escritura remota.
-    // Retorna la promesa para poder hacer await si se necesita.
     const setItem = (key, value) => {
         _cache[key] = value;
         setSyncState('loading', 'Guardando...');
-        const p = Storage.set(key, value);
-        // Cuando la cola llegue a este punto, actualizar el indicador
-        _saveQueue.then(() => setSyncState('ok', '✓ Guardado en Sheets'))
-                  .catch(() => setSyncState('error', '✗ Error al guardar'));
-        return p;
+        Storage.set(key, value);
+        _saveQueue
+            .then(() => setSyncState('ok', '✓ Guardado en Sheets'))
+            .catch(() => setSyncState('error', '✗ Error al guardar'));
     };
 
     // ── UTILIDADES ────────────────────────────────────────────────
@@ -935,9 +928,11 @@
         };
         searchInput.addEventListener('focus', showAllOptions);
         searchInput.addEventListener('input', (ev) => filterOptions(ev.target.value));
-        select.addEventListener('change', () => {
+        select.addEventListener('change', (evt) => {
+            // Evitar loop: solo procesar eventos de usuario, no los sintéticos
+            if (!evt.isTrusted) return;
             const sel = select.options[select.selectedIndex];
-            if (sel) { searchInput.value = sel.textContent.split('(')[0].trim(); select.classList.add('hidden'); select.dispatchEvent(new Event('change', { bubbles: true })); }
+            if (sel) { searchInput.value = sel.textContent.split('(')[0].trim(); select.classList.add('hidden'); }
         });
         window.addEventListener('click', (ev) => { if (!wrapper.contains(ev.target)) select.classList.add('hidden'); });
         const init = select.options[select.selectedIndex];

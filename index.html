@@ -706,11 +706,10 @@
             return _saveQueue;
         },
 
-        // ✅ MEJORA: saveMultiple ahora usa setBatch internamente (una sola llamada HTTP)
+        // ✅ saveMultiple — usa _rawBatch (secuencial sin cola) para operaciones normales
         async saveMultiple(entries) {
             entries.forEach(([k, v]) => { _cache[k] = v; });
             setSyncState('loading', 'Guardando...');
-            await _saveQueue;
             try {
                 await this._rawBatch(entries);
                 setSyncState('ok', '✓ Guardado en Sheets');
@@ -734,13 +733,16 @@
             }
         },
 
-        // ✅ NUEVO: saveBatch — método público para importación masiva con progreso
+        // ✅ NUEVO: saveBatch — importación masiva SIN pasar por _saveQueue
+        // CRÍTICO: NO hace "await _saveQueue" porque la cola puede tener ops
+        // bloqueadas del arranque inicial que causarían timeout/CORS.
+        // saveBatch va directo a _rawSet de forma independiente.
         async saveBatch(entries, onProgress) {
+            // 1. Actualizar caché local inmediatamente
             entries.forEach(([k, v]) => { _cache[k] = v; });
             setSyncState('loading', 'Importando datos...');
-            await _saveQueue;
             try {
-                // Guardar una por una con callback de progreso
+                // 2. Guardar secuencialmente sin cola, directo al servidor
                 for (let i = 0; i < entries.length; i++) {
                     const [k, v] = entries[i];
                     await this._rawSet(k, v);

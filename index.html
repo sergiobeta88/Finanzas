@@ -678,10 +678,11 @@
     };
 
     // ── CAPA DE ALMACENAMIENTO ────────────────────────────────────
-    // ESTRATEGIA CORS: usar siempre GET para todo (lecturas Y escrituras).
-    // GET no tiene restricciones CORS. El Apps Script ya soporta todas las
-    // acciones via parámetros GET. Para valores grandes usamos POST sin headers
-    // (text/plain no dispara preflight). La cola garantiza orden secuencial.
+    // ESTRATEGIA CORS:
+    // - Lecturas: GET (sin restricción CORS)
+    // - Escritura individual: POST sin Content-Type (text/plain implícito, sin preflight)
+    // - Escritura múltiple (import): POST setBatch → una sola llamada para todas las claves
+    // - Cola secuencial: evita que Apps Script reciba peticiones simultáneas
     const Storage = {
         async get(key) {
             if (_cache[key] !== undefined) return _cache[key];
@@ -694,49 +695,18 @@
                     return _cache[key];
                 }
                 return null;
-            } catch(e) {
-                console.error('Storage.get error:', e);
-                return null;
-            }
+            } catch(e) { console.error('Storage.get error:', e); return null; }
         },
 
-        // SOLUCIÓN DEFINITIVA AL CORS:
-        // Todos los valores se guardan via GET usando chunks de máx 1500 chars.
-        // GET nunca dispara preflight CORS, sin importar el tamaño del valor.
-        // El Apps Script ensambla los chunks y guarda el valor completo.
+        // POST sin Content-Type → text/plain implícito → sin preflight CORS
         async _rawSet(key, value) {
-            const CHUNK_SIZE = 1500; // chars seguros para URL GET
-            const valStr = JSON.stringify(value);
-            const encoded = encodeURIComponent(valStr);
-
-            if (encoded.length <= CHUNK_SIZE) {
-                // Valor pequeño: un solo GET
-                const url = `${SCRIPT_URL}?action=set&key=${encodeURIComponent(key)}&value=${encoded}`;
-                const r = await fetch(url);
-                const json = await r.json();
-                if (!json.success) throw new Error(`Error set ${key}`);
-            } else {
-                // Valor grande: dividir en chunks y enviar via GET
-                const chunks = [];
-                let i = 0;
-                // Dividir el string ORIGINAL (no el encoded) en partes
-                while (i < valStr.length) {
-                    // Tomar porciones que al encodear no superen CHUNK_SIZE
-                    let end = i + 800; // 800 chars raw ≈ ~1200 encoded en el peor caso
-                    if (end > valStr.length) end = valStr.length;
-                    chunks.push(valStr.substring(i, end));
-                    i = end;
-                }
-                const total = chunks.length;
-                for (let ci = 0; ci < total; ci++) {
-                    const url = `${SCRIPT_URL}?action=setChunk&key=${encodeURIComponent(key)}&chunkIndex=${ci}&totalChunks=${total}&chunk=${encodeURIComponent(chunks[ci])}`;
-                    const r = await fetch(url);
-                    const json = await r.json();
-                    if (!json.success) throw new Error(`Error setChunk ${key} chunk ${ci}`);
-                }
-            }
+            const body = JSON.stringify({ action: 'set', key, value: JSON.stringify(value) });
+            const r = await fetch(SCRIPT_URL, { method: 'POST', body });
+            const json = await r.json();
+            if (!json.success) throw new Error(`Error set ${key}: ${json.message||''}`);
         },
 
+        // Guarda una sola clave, encolada
         set(key, value) {
             _cache[key] = value;
             _saveQueue = _saveQueue.then(async () => {
@@ -746,15 +716,18 @@
             return _saveQueue;
         },
 
-        // Guarda múltiples claves secuencialmente con indicador unificado.
+        // Guarda múltiples claves en UNA SOLA llamada via setBatch
+        // Mucho más rápido y fiable que llamadas secuenciales
         saveMultiple(entries) {
             entries.forEach(([k, v]) => { _cache[k] = v; });
             setSyncState('loading', 'Guardando...');
             _saveQueue = _saveQueue.then(async () => {
                 try {
-                    for (const [k, v] of entries) {
-                        await this._rawSet(k, v);
-                    }
+                    const batch = entries.map(([k, v]) => ({ key: k, value: JSON.stringify(v) }));
+                    const body  = JSON.stringify({ action: 'setBatch', batch });
+                    const r     = await fetch(SCRIPT_URL, { method: 'POST', body });
+                    const json  = await r.json();
+                    if (!json.success) throw new Error(json.message || 'setBatch falló');
                     setSyncState('ok', '✓ Guardado en Sheets');
                 } catch(e) {
                     setSyncState('error', '✗ Error al guardar');
@@ -775,7 +748,7 @@
                     });
                     return _cache;
                 }
-                throw new Error('getAll no retornó success');
+                throw new Error('getAll falló');
             } catch(e) { throw e; }
         }
     };

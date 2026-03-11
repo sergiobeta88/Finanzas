@@ -712,21 +712,24 @@
             return _saveQueue;
         },
 
-        saveMultiple(entries) {
+        // saveMultiple: guarda secuencialmente y retorna una promesa
+        // que se resuelve SOLO cuando TODAS las escrituras terminaron.
+        // Así el caller puede hacer "await Storage.saveMultiple(...)" con garantía.
+        async saveMultiple(entries) {
             entries.forEach(([k, v]) => { _cache[k] = v; });
             setSyncState('loading', 'Guardando...');
-            _saveQueue = _saveQueue.then(async () => {
-                try {
-                    for (const [k, v] of entries) {
-                        await this._rawSet(k, v);
-                    }
-                    setSyncState('ok', '✓ Guardado en Sheets');
-                } catch(e) {
-                    setSyncState('error', '✗ Error al guardar');
-                    console.error('saveMultiple error:', e);
+            // Esperar a que la cola actual termine antes de agregar nuevas escrituras
+            await _saveQueue;
+            try {
+                for (const [k, v] of entries) {
+                    await this._rawSet(k, v);
                 }
-            });
-            return _saveQueue;
+                setSyncState('ok', '✓ Guardado en Sheets');
+            } catch(e) {
+                setSyncState('error', '✗ Error al guardar');
+                console.error('saveMultiple error:', e);
+                throw e;
+            }
         },
 
         async getAll() {

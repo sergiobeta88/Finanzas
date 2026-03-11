@@ -700,24 +700,16 @@
             }
         },
 
-        // Escritura via GET para valores pequeños, POST sin Content-Type para grandes.
-        // POST sin Content-Type header usa text/plain implícito → NO dispara preflight CORS.
+        // POST con Content-Type: application/json.
+        // Funciona ahora que Apps Script tiene doOptions() para el preflight CORS.
         async _rawSet(key, value) {
-            const valStr = JSON.stringify(value);
-            const getUrl = `${SCRIPT_URL}?action=set&key=${encodeURIComponent(key)}&value=${encodeURIComponent(valStr)}`;
-            
-            // Si la URL es manejable (<2000 chars), usar GET (garantizado sin CORS)
-            if (getUrl.length < 2000) {
-                const r = await fetch(getUrl);
-                const json = await r.json();
-                if (!json.success) throw new Error(`Error set ${key}`);
-            } else {
-                // Valor grande: POST con body text/plain (no dispara preflight)
-                const body = JSON.stringify({ action: 'set', key, value: valStr });
-                const r = await fetch(SCRIPT_URL, { method: 'POST', body });
-                const json = await r.json();
-                if (!json.success) throw new Error(`Error set ${key}`);
-            }
+            const r = await fetch(SCRIPT_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'set', key, value: JSON.stringify(value) })
+            });
+            const json = await r.json();
+            if (!json.success) throw new Error(`Error set ${key}: ${json.message || ''}`);
         },
 
         set(key, value) {

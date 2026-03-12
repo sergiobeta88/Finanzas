@@ -65,6 +65,29 @@
             console.warn("⚠️ Firebase no pudo inicializarse. Modo offline activado.", err);
         }
 
+        // Claves que son texto plano (NO son JSON)
+        const PLAIN_TEXT_KEYS = ['lastModified'];
+
+        // Flag global: mientras sea true, el onSnapshot ignora los cambios remotos
+        let _isSavingToFirebase = false;
+        let _saveSupressTimer   = null;
+
+        // Helper: escribir datos de Firebase al localStorage de forma segura
+        function _writeFirebaseDataToLocal(data) {
+            FIREBASE_KEYS.forEach(key => {
+                if (data[key] === undefined || data[key] === null) return;
+                if (PLAIN_TEXT_KEYS.includes(key)) {
+                    localStorage.setItem(key, data[key]);
+                } else {
+                    try {
+                        localStorage.setItem(key, JSON.stringify(data[key]));
+                    } catch(e) {
+                        localStorage.setItem(key, data[key]);
+                    }
+                }
+            });
+        }
+
         // ─── Leer TODO desde Firestore y volcarlo en localStorage ─────
         async function loadFromFirebase() {
             if (!firebaseAvailable) return false;
@@ -72,13 +95,7 @@
                 const ref  = doc(db, COLLECTION, USER_DOC_ID);
                 const snap = await getDoc(ref);
                 if (snap.exists()) {
-                    const data = snap.data();
-                    FIREBASE_KEYS.forEach(key => {
-                        if (data[key] !== undefined) {
-                            // Firestore devuelve objetos/arrays nativos → serializar a string
-                            localStorage.setItem(key, JSON.stringify(data[key]));
-                        }
-                    });
+                    _writeFirebaseDataToLocal(snap.data());
                     console.log("☁️ Datos cargados desde Firebase.");
                     return true;
                 }
@@ -93,73 +110,64 @@
         // ─── Guardar TODO en Firestore desde localStorage ─────────────
         async function saveToFirebase() {
             if (!firebaseAvailable) return;
+
+            // Activar flag ANTES de guardar para suprimir el eco del onSnapshot
+            _isSavingToFirebase = true;
+            if (_saveSupressTimer) clearTimeout(_saveSupressTimer);
+
             try {
                 const payload = {};
-                // Claves que son texto plano (NO son JSON)
-                const plainTextKeys = ['lastModified'];
-
                 FIREBASE_KEYS.forEach(key => {
                     const raw = localStorage.getItem(key);
-                    if (raw === null) {
-                        payload[key] = null;
-                    } else if (plainTextKeys.includes(key)) {
-                        // Guardar como string directamente, sin JSON.parse
+                    if (raw === null) { payload[key] = null; return; }
+                    if (PLAIN_TEXT_KEYS.includes(key)) {
                         payload[key] = raw;
                     } else {
-                        try {
-                            payload[key] = JSON.parse(raw);
-                        } catch(e) {
-                            // Si falla el parse, guardar como string
-                            payload[key] = raw;
-                        }
+                        try { payload[key] = JSON.parse(raw); }
+                        catch(e) { payload[key] = raw; }
                     }
                 });
                 const ref = doc(db, COLLECTION, USER_DOC_ID);
                 await setDoc(ref, payload, { merge: true });
                 console.log("💾 Datos guardados en Firebase.");
             } catch (err) {
-                console.warn("⚠️ Error guardando en Firebase. Datos siguen en localStorage.", err);
+                console.warn("⚠️ Error guardando en Firebase.", err);
+            } finally {
+                // Mantener el flag activo 4 s para absorber el eco del onSnapshot
+                _saveSupressTimer = setTimeout(() => {
+                    _isSavingToFirebase = false;
+                }, 4000);
             }
         }
 
         // ─── Escuchar cambios en tiempo real ──────────────────────────
-        // Flag para evitar que el guardado propio dispare una re-carga
-        let _isSavingToFirebase = false;
-
-        // Sobreescribir saveToFirebase para activar el flag
-        const _originalSave = saveToFirebase;
-        saveToFirebase = async function() {
-            _isSavingToFirebase = true;
-            await _originalSave();
-            // Mantener el flag activo 3 segundos para absorber el eco del onSnapshot
-            setTimeout(() => { _isSavingToFirebase = false; }, 3000);
-        };
-
         function startRealtimeSync() {
             if (!firebaseAvailable) return;
             if (unsubscribe) unsubscribe();
 
+            // Ignorar el PRIMER disparo del onSnapshot (que repite lo que acabamos de cargar)
+            let isFirstSnapshot = true;
+
             const ref = doc(db, COLLECTION, USER_DOC_ID);
             unsubscribe = onSnapshot(ref, (snap) => {
+                // El primer disparo siempre es el estado actual — ignorarlo
+                if (isFirstSnapshot) { isFirstSnapshot = false; return; }
                 if (!snap.exists()) return;
-                // Ignorar el eco de nuestro propio guardado
-                if (_isSavingToFirebase) return;
 
-                const data = snap.data();
-                const localLM  = localStorage.getItem('lastModified');
-                const remoteLM = data.lastModified || null;
+                // Si somos nosotros mismos guardando, ignorar el eco
+                if (_isSavingToFirebase) {
+                    console.log("🔁 Eco propio ignorado.");
+                    return;
+                }
+
+                // Llegó un cambio real de OTRO dispositivo
+                const data      = snap.data();
+                const localLM   = localStorage.getItem('lastModified');
+                const remoteLM  = data.lastModified || null;
 
                 if (remoteLM && remoteLM !== localLM) {
-                    const plainTextKeys = ['lastModified'];
-                    FIREBASE_KEYS.forEach(key => {
-                        if (data[key] === undefined) return;
-                        if (plainTextKeys.includes(key)) {
-                            localStorage.setItem(key, data[key]);
-                        } else {
-                            localStorage.setItem(key, JSON.stringify(data[key]));
-                        }
-                    });
-                    console.log("🔄 Sincronización en tiempo real recibida.");
+                    _writeFirebaseDataToLocal(data);
+                    console.log("🔄 Sincronización en tiempo real desde otro dispositivo.");
                     if (window.loadData) window.loadData();
                 }
             }, err => {

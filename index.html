@@ -122,23 +122,42 @@
             }
         }
 
-        // ─── Escuchar cambios en tiempo real (opcional pero útil) ──────
+        // ─── Escuchar cambios en tiempo real ──────────────────────────
+        // Flag para evitar que el guardado propio dispare una re-carga
+        let _isSavingToFirebase = false;
+
+        // Sobreescribir saveToFirebase para activar el flag
+        const _originalSave = saveToFirebase;
+        saveToFirebase = async function() {
+            _isSavingToFirebase = true;
+            await _originalSave();
+            // Mantener el flag activo 3 segundos para absorber el eco del onSnapshot
+            setTimeout(() => { _isSavingToFirebase = false; }, 3000);
+        };
+
         function startRealtimeSync() {
             if (!firebaseAvailable) return;
-            if (unsubscribe) unsubscribe(); // cancelar listener anterior si existe
+            if (unsubscribe) unsubscribe();
 
             const ref = doc(db, COLLECTION, USER_DOC_ID);
             unsubscribe = onSnapshot(ref, (snap) => {
                 if (!snap.exists()) return;
+                // Ignorar el eco de nuestro propio guardado
+                if (_isSavingToFirebase) return;
+
                 const data = snap.data();
-                // Solo actualizar si el cambio vino de OTRO dispositivo/pestaña
-                // Para detectarlo comparamos lastModified
                 const localLM  = localStorage.getItem('lastModified');
-                const remoteLM = data.lastModified ? JSON.stringify(data.lastModified) : null;
+                const remoteLM = data.lastModified || null;
+
                 if (remoteLM && remoteLM !== localLM) {
+                    const plainTextKeys = ['lastModified'];
                     FIREBASE_KEYS.forEach(key => {
-                        if (data[key] !== undefined)
+                        if (data[key] === undefined) return;
+                        if (plainTextKeys.includes(key)) {
+                            localStorage.setItem(key, data[key]);
+                        } else {
                             localStorage.setItem(key, JSON.stringify(data[key]));
+                        }
                     });
                     console.log("🔄 Sincronización en tiempo real recibida.");
                     if (window.loadData) window.loadData();
@@ -1020,9 +1039,18 @@
             };
             searchInput.addEventListener('focus', showAllOptions);
             searchInput.addEventListener('input', (e) => filterOptions(e.target.value));
-            select.addEventListener('change', () => {
+            select.addEventListener('change', (evt) => {
+                // Evitar re-disparar si el evento ya fue procesado (previene stack overflow)
+                if (evt._searchableHandled) return;
                 const sel = select.options[select.selectedIndex];
-                if (sel) { searchInput.value = sel.textContent.split('(')[0].trim(); select.classList.add('hidden'); select.dispatchEvent(new Event('change',{bubbles:true})); }
+                if (sel) {
+                    searchInput.value = sel.textContent.split('(')[0].trim();
+                    select.classList.add('hidden');
+                    // Marcar el evento para que no se procese dos veces
+                    const nativeEvent = new Event('change', { bubbles: true });
+                    nativeEvent._searchableHandled = true;
+                    select.dispatchEvent(nativeEvent);
+                }
             });
             window.addEventListener('click', (e) => { if (!wrapper.contains(e.target)) select.classList.add('hidden'); });
             const init = select.options[select.selectedIndex];

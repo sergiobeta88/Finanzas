@@ -1956,7 +1956,7 @@
             showConfirmationModal('¿Eliminar esta compra? El saldo se ajustará.',()=>{
                 saveState();
                 let cards=JSON.parse(localStorage.getItem('credit_cards'))||[], card=cards.find(c=>c.id===cardId);
-                if(card){const pi=card.purchases.findIndex(p=>p.id===purchaseId);if(pi!==-1){card.currentBalance-=card.purchases[pi].value;card.purchases.splice(pi,1);localStorage.setItem('credit_cards',JSON.stringify(cards));loadData();showMessage('Compra eliminada.');}}
+                if(card){const pi=card.purchases.findIndex(p=>p.id===purchaseId);if(pi!==-1){card.currentBalance-=card.purchases[pi].value;card.purchases.splice(pi,1);localStorage.setItem('credit_cards',JSON.stringify(cards));syncToFirebase();loadData();showMessage('Compra eliminada.');}}
             });
         };
 
@@ -2027,6 +2027,7 @@
                 revertTransaction(txs[idx],accounts,pockets); txs.splice(idx,1);
                 delete checkedTransactions[txId]; localStorage.setItem('checkedTransactions',JSON.stringify(checkedTransactions));
                 localStorage.setItem('accounts',JSON.stringify(accounts)); localStorage.setItem('pockets',JSON.stringify(pockets)); localStorage.setItem('transactions',JSON.stringify(txs));
+                syncToFirebase();
                 loadData(); showSection(previousSection); showMessage('Transacción eliminada.','success');
             });
         };
@@ -2057,7 +2058,12 @@
             if((colName==='accounts'||colName==='pockets')&&Math.abs(item.balance)>0.01){canDelete=false;msg=`No se puede eliminar "${item.name}" porque su saldo no es cero.`;}
             else if(colName==='credit_cards'&&Math.abs(item.currentBalance)>0.01){canDelete=false;msg=`No se puede eliminar "${item.name}" porque tiene deuda pendiente.`;}
             if(!canDelete) return showMessage(msg,'error');
-            showConfirmationModal(msg,()=>{saveState();localStorage.setItem(colName,JSON.stringify(items.filter(i=>i.id!==itemId)));loadData();showMessage('Elemento eliminado.','success');});
+            showConfirmationModal(msg,()=>{
+                saveState();
+                localStorage.setItem(colName,JSON.stringify(items.filter(i=>i.id!==itemId)));
+                syncToFirebase();
+                loadData();showMessage('Elemento eliminado.','success');
+            });
         };
 
         const populateMonthFilter=(selectId,transactions,renderCallback)=>{
@@ -2213,6 +2219,7 @@
                 const idx=txs.findIndex(t=>t.id===txId);if(idx===-1) throw new Error('No se pudo encontrar la transacción.');
                 txs[idx]=updatedTx;
                 localStorage.setItem('accounts',JSON.stringify(accounts)); localStorage.setItem('pockets',JSON.stringify(pockets)); localStorage.setItem('transactions',JSON.stringify(txs));
+                syncToFirebase();
                 loadData(); showSection(previousSection); document.getElementById('edit-transaction-modal').classList.add('hidden'); showMessage('Movimiento actualizado.','success');
             } catch(err){applyTransaction(originalTx,accounts,pockets);showMessage(err.message,'error');}
         });

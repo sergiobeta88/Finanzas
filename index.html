@@ -95,9 +95,24 @@
             if (!firebaseAvailable) return;
             try {
                 const payload = {};
+                // Claves que son texto plano (NO son JSON)
+                const plainTextKeys = ['lastModified'];
+
                 FIREBASE_KEYS.forEach(key => {
                     const raw = localStorage.getItem(key);
-                    payload[key] = raw ? JSON.parse(raw) : null;
+                    if (raw === null) {
+                        payload[key] = null;
+                    } else if (plainTextKeys.includes(key)) {
+                        // Guardar como string directamente, sin JSON.parse
+                        payload[key] = raw;
+                    } else {
+                        try {
+                            payload[key] = JSON.parse(raw);
+                        } catch(e) {
+                            // Si falla el parse, guardar como string
+                            payload[key] = raw;
+                        }
+                    }
                 });
                 const ref = doc(db, COLLECTION, USER_DOC_ID);
                 await setDoc(ref, payload, { merge: true });

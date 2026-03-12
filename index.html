@@ -1135,7 +1135,8 @@
         };
 
         // ═══════════════════════════════════════════════════════════════
-        // saveState — MODIFICADO: llama a Firebase después de guardar
+        // saveState — guarda historial local SOLAMENTE
+        // Firebase se llama por separado con syncToFirebase()
         // ═══════════════════════════════════════════════════════════════
         const saveState = () => {
             updateLastModified();
@@ -1154,8 +1155,12 @@
             localStorage.setItem('history', JSON.stringify(history));
             localStorage.removeItem('redoHistory');
             updateUndoRedoButtonStates();
+            // NO llama a Firebase aquí — se llama explícitamente después
+            // de que cada operación termine de escribir en localStorage
+        };
 
-            // ── NUEVO: persistir en Firebase de forma asíncrona ──────
+        // Llama a Firebase DESPUÉS de que localStorage ya tiene los datos finales
+        const syncToFirebase = () => {
             if (window._firebase && window._firebase.available()) {
                 setFirebaseStatus('saving');
                 window._firebase.save()
@@ -1708,7 +1713,7 @@
             } else {
                 accounts.push({id:crypto.randomUUID(),name,balance:initialBalance,type,createdAt:new Date().toISOString()});showMessage('Cuenta creada.');
             }
-            localStorage.setItem('accounts',JSON.stringify(accounts)); loadData(); form.reset();
+            localStorage.setItem('accounts',JSON.stringify(accounts)); syncToFirebase(); loadData(); form.reset();
         });
 
         document.getElementById('pocket-form').addEventListener('submit', (e) => {
@@ -1722,7 +1727,7 @@
             } else {
                 pockets.push({id:crypto.randomUUID(),name,balance:initialBalance,type,biweeklyPaymentHistory:{},installmentTransferHistory:{},createdAt:new Date().toISOString()});showMessage('Bolsillo creado.');
             }
-            localStorage.setItem('pockets',JSON.stringify(pockets)); loadData(); form.reset();
+            localStorage.setItem('pockets',JSON.stringify(pockets)); syncToFirebase(); loadData(); form.reset();
         });
 
         document.getElementById('transfer-form').addEventListener('submit', (e) => {
@@ -1746,6 +1751,7 @@
             const txs=JSON.parse(localStorage.getItem('transactions'))||[];
             txs.push({id:crypto.randomUUID(),date,concept,value,type:'transfer',sourceId,sourceType,destinationId,destinationType,finalSourceBalance:sourceItem.balance,finalDestinationBalance:destItem.balance,createdAt:new Date().toISOString()});
             localStorage.setItem('transactions',JSON.stringify(txs));
+            syncToFirebase();
             loadData(); showMessage('Transferencia realizada con éxito.'); form.reset();
             document.getElementById('transfer-date').valueAsDate=new Date();
             makeSelectSearchable('transfer-source-account'); makeSelectSearchable('transfer-source-pocket');
@@ -2237,6 +2243,7 @@
             if(newTx.pocketId){const p=pockets.find(p=>p.id===newTx.pocketId);if(p)newTx.finalPocketBalance=p.balance;}
             txs.push(newTx);
             localStorage.setItem('accounts',JSON.stringify(accounts)); localStorage.setItem('pockets',JSON.stringify(pockets)); localStorage.setItem('transactions',JSON.stringify(txs));
+            syncToFirebase();
             loadData(); showMessage('Movimiento registrado con éxito.'); form.reset();
             document.getElementById('date').value=new Date().toISOString().split('T')[0];
             document.getElementById('distribution-summary-display').classList.add('hidden');

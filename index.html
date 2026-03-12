@@ -2262,24 +2262,39 @@
 
             // ── Firebase: cargar datos de la nube ANTES de renderizar ──
             setFirebaseStatus('loading');
-            let loadedFromCloud = false;
             if (window._firebase && window._firebase.available()) {
-                loadedFromCloud = await window._firebase.load();
-                if (loadedFromCloud) {
-                    setFirebaseStatus('connected');
-                } else {
-                    setFirebaseStatus('connected'); // Conectado pero sin datos remotos aún
-                }
-                // Iniciar sincronización en tiempo real
-                window._firebase.startSync();
+                const loadedFromCloud = await window._firebase.load();
+                setFirebaseStatus('connected');
+                // Iniciar sync en tiempo real DESPUÉS de cargar
+                // (pequeño delay para que isFirstSnapshot absorba el eco de arranque)
+                setTimeout(() => window._firebase.startSync(), 500);
             } else {
                 setFirebaseStatus('offline');
             }
 
             // ── Inicializar app ────────────────────────────────────────
             document.getElementById('date').value = new Date().toISOString().split('T')[0];
+
+            // IMPORTANTE: solo crear historial vacío si NO hay datos en Firebase
+            // para no sobreescribir los datos recién cargados de la nube
             const history = JSON.parse(localStorage.getItem('history')) || [];
-            if (history.length === 0) saveState();
+            if (history.length === 0) {
+                // Guardar estado inicial SIN subir a Firebase (evita sobreescribir)
+                updateLastModified();
+                const initialState = {
+                    accounts:             JSON.parse(localStorage.getItem('accounts'))            || [],
+                    pockets:              JSON.parse(localStorage.getItem('pockets'))             || [],
+                    transactions:         JSON.parse(localStorage.getItem('transactions'))        || [],
+                    creditCards:          JSON.parse(localStorage.getItem('credit_cards'))        || [],
+                    savedBudgets:         JSON.parse(localStorage.getItem('saved_budgets'))       || [],
+                    checkedTransactions:  JSON.parse(localStorage.getItem('checkedTransactions')) || {},
+                    pocketPaymentsChecked: pocketPaymentsChecked
+                };
+                const h = [initialState];
+                localStorage.setItem('history', JSON.stringify(h));
+                updateUndoRedoButtonStates();
+            }
+
             loadData();
 
             const accounts = (JSON.parse(localStorage.getItem('accounts')) || []).filter(i => i && i.name);

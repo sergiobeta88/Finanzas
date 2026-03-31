@@ -59,7 +59,7 @@
         try {
             const app = initializeApp(firebaseConfig);
             db = getFirestore(app);
-            firebaseAvailable = true;
+            firebaseAvailable = false;
             console.log("✅ Firebase conectado correctamente.");
         } catch (err) {
             console.warn("⚠️ Firebase no pudo inicializarse. Modo offline activado.", err);

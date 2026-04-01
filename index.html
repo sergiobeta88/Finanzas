@@ -1246,8 +1246,14 @@
         } else {
             document.getElementById('edit-income-expense-fields').classList.remove('hidden');
             document.getElementById('edit-type-label').textContent=tx.type==='income'?'Ingreso':'Gasto';
-            document.getElementById('edit-afecta-cuenta').value=tx.accountId||'';
-            document.getElementById('edit-afecta-bolsillo').value=tx.pocketId||'';
+            // Poblar selects del modal con cuentas y bolsillos
+            const cs=document.getElementById('edit-afecta-cuenta'), bs=document.getElementById('edit-afecta-bolsillo');
+            cs.innerHTML='<option value="">Ninguna</option>';
+            bs.innerHTML='<option value="">Ninguno</option>';
+            accounts.forEach(a=>cs.innerHTML+=`<option value="${a.id}">${a.name} (${ACCOUNT_TYPES[a.type]||a.type}) (${a.balance.toLocaleString('es-CO')})</option>`);
+            pockets.forEach(p=>bs.innerHTML+=`<option value="${p.id}">${p.name} (${POCKET_TYPES[p.type]||p.type}) (${p.balance.toLocaleString('es-CO')})</option>`);
+            cs.value=tx.accountId||'';
+            bs.value=tx.pocketId||'';
         }
         modal.classList.remove('hidden');
     };

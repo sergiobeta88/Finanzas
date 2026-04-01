@@ -504,23 +504,104 @@
         });
     };
 
-    const makeSelectSearchable=(selectId)=>{
-        const select=document.getElementById(selectId); if(!select)return;
-        const cw=select.closest('.relative');
-        if(cw){const si=cw.querySelector('.search-input');if(si){const sel=select.options[select.selectedIndex];si.value=(sel&&sel.value!=="")?sel.textContent.split('(')[0].trim():'';}return;}
-        const wrapper=document.createElement('div'); wrapper.classList.add('relative','w-full');
-        select.parentNode.insertBefore(wrapper,select); wrapper.appendChild(select);
-        const searchInput=document.createElement('input'); searchInput.type='text'; searchInput.placeholder='Buscar...';
-        searchInput.classList.add('w-full','px-4','py-2','border','rounded-lg','focus:outline-none','focus:ring-2','focus:ring-blue-300','search-input');
-        wrapper.insertBefore(searchInput,select); select.classList.add('hidden');
-        const getOpts=()=>Array.from(select.options);
-        const showAll=()=>{const opts=getOpts();select.innerHTML='';opts.forEach(o=>select.appendChild(o.cloneNode(true)));select.size=Math.min(10,opts.length);select.classList.remove('hidden');select.style.position='absolute';select.style.width='100%';select.style.zIndex='50';select.style.backgroundColor='white';select.style.boxShadow='0 4px 6px rgba(0,0,0,.1)';select.style.top=`${searchInput.offsetHeight}px`;select.style.border='1px solid #ccc';select.style.borderRadius='0 0 .5rem .5rem';};
-        const filterOpts=(f)=>{const flt=getOpts().filter(o=>o.value===""||o.textContent.toLowerCase().includes(f.toLowerCase()));select.innerHTML='';flt.forEach(o=>select.appendChild(o.cloneNode(true)));select.size=Math.min(10,flt.length);flt.length>0?select.classList.remove('hidden'):select.classList.add('hidden');};
-        searchInput.addEventListener('focus',showAll); searchInput.addEventListener('input',(e)=>filterOpts(e.target.value));
-        select.addEventListener('change',(evt)=>{if(evt._searchableHandled)return;const sel=select.options[select.selectedIndex];if(sel){searchInput.value=sel.textContent.split('(')[0].trim();select.classList.add('hidden');const ne=new Event('change',{bubbles:true});ne._searchableHandled=true;select.dispatchEvent(ne);}});
-        window.addEventListener('click',(e)=>{if(!wrapper.contains(e.target))select.classList.add('hidden');});
-        const init=select.options[select.selectedIndex]; if(init&&init.value!=="")searchInput.value=init.textContent.split('(')[0].trim();
+// ─── PASO 1: pegar esto ANTES de makeSelectSearchable ───────────────
+// Extrae "Nombre ($ saldo)" desde "Nombre (Tipo) ($ 1.234.567,00)"
+const getDisplayLabel = (o) => {
+    if (!o || o.value === '') return '';
+    const full = o.textContent.trim();
+    const firstParen = full.indexOf('(');
+    const lastParen  = full.lastIndexOf('(');
+    if (firstParen > 0 && lastParen > firstParen) {
+        return `${full.substring(0, firstParen).trim()} ${full.substring(lastParen)}`;
+    }
+    return full;
+};
+
+// ─── PASO 2: reemplazar TODA la función makeSelectSearchable ─────────
+const makeSelectSearchable = (selectId) => {
+    const select = document.getElementById(selectId);
+    if (!select) return;
+
+    // Si ya fue transformado: solo actualizar texto del input
+    if (select._searchableInit) {
+        if (select._searchableInput) {
+            select._searchableInput.value = getDisplayLabel(select.options[select.selectedIndex]);
+        }
+        return;
+    }
+    select._searchableInit = true;
+
+    const wrapper = document.createElement('div');
+    wrapper.style.cssText = 'position:relative;width:100%;';
+    select.parentNode.insertBefore(wrapper, select);
+    wrapper.appendChild(select);
+    select.style.display = 'none';
+
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.placeholder = 'Buscar...';
+    input.autocomplete = 'off';
+    input.className = 'w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300';
+    wrapper.insertBefore(input, select);
+
+    const dropdown = document.createElement('div');
+    dropdown.style.cssText = [
+        'position:absolute','top:100%','left:0','width:100%',
+        'max-height:220px','overflow-y:auto','background:#fff',
+        'border:1px solid #cbd5e0','border-radius:0 0 .5rem .5rem',
+        'box-shadow:0 4px 8px rgba(0,0,0,.12)','z-index:9999',
+        'display:none'
+    ].join(';');
+    wrapper.appendChild(dropdown);
+
+    const getAllOpts = () => Array.from(select.options);
+
+    const renderDropdown = (filter = '') => {
+        const q = filter.toLowerCase().trim();
+        dropdown.innerHTML = '';
+        const opts = getAllOpts().filter(o => o.value === '' || o.textContent.toLowerCase().includes(q));
+        if (!opts.length) {
+            dropdown.innerHTML = '<div style="padding:8px 12px;color:#888;font-size:13px;">Sin resultados</div>';
+            return;
+        }
+        opts.forEach(o => {
+            const item = document.createElement('div');
+            item.textContent = o.textContent;
+            item.dataset.value = o.value;
+            item.style.cssText = 'padding:8px 12px;cursor:pointer;font-size:13px;border-bottom:1px solid #f0f0f0;line-height:1.4;';
+            if (o.value === select.value) { item.style.background='#ebf4ff'; item.style.fontWeight='600'; }
+            item.addEventListener('mousedown', e => {
+                e.preventDefault();
+                select.value = o.value;
+                input.value  = getDisplayLabel(o); // ← nombre + saldo
+                closeDropdown();
+                select.dispatchEvent(new Event('change', { bubbles: true }));
+            });
+            item.addEventListener('mouseenter', () => item.style.background = '#ebf4ff');
+            item.addEventListener('mouseleave', () => {
+                item.style.background = o.value === select.value ? '#ebf4ff' : '';
+            });
+            dropdown.appendChild(item);
+        });
     };
+
+    const openDropdown  = () => { renderDropdown(input.value); dropdown.style.display = 'block'; };
+    const closeDropdown = () => { dropdown.style.display = 'none'; };
+
+    input.addEventListener('focus', openDropdown);
+    input.addEventListener('input', () => renderDropdown(input.value));
+    input.addEventListener('blur',  () => setTimeout(closeDropdown, 150));
+    document.addEventListener('click', e => { if (!wrapper.contains(e.target)) closeDropdown(); });
+    select.addEventListener('change', () => {
+        input.value = getDisplayLabel(select.options[select.selectedIndex]);
+    });
+
+    input.value = getDisplayLabel(select.options[select.selectedIndex]);
+
+    select._searchableInput    = input;
+    select._searchableDropdown = dropdown;
+    select._searchableRender   = renderDropdown;
+};
 
     function showSection(id){
         sections.forEach(s=>document.getElementById(s).classList.add('hidden'));

@@ -9,7 +9,7 @@
     <link rel="icon" type="image/svg+xml" id="app-favicon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%232b6cb0'/%3E%3Cstop offset='1' stop-color='%231a365d'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='14' fill='url%28%23g%29'/%3E%3Crect x='8' y='38' width='9' height='16' rx='2' fill='%239ae6b4'/%3E%3Crect x='20' y='30' width='9' height='24' rx='2' fill='%2368d391'/%3E%3Crect x='32' y='22' width='9' height='32' rx='2' fill='%2348bb78'/%3E%3Ccircle cx='45' cy='20' r='13' fill='%23f6c744' stroke='%23b7791f' stroke-width='2.5'/%3E%3Ctext x='45' y='21' text-anchor='middle' dominant-baseline='central' font-family='Arial%2CHelvetica%2Csans-serif' font-weight='700' font-size='17' fill='%23744210'%3E%24%3C/text%3E%3C/svg%3E">
     <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%232b6cb0'/%3E%3Cstop offset='1' stop-color='%231a365d'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='14' fill='url%28%23g%29'/%3E%3Crect x='8' y='38' width='9' height='16' rx='2' fill='%239ae6b4'/%3E%3Crect x='20' y='30' width='9' height='24' rx='2' fill='%2368d391'/%3E%3Crect x='32' y='22' width='9' height='32' rx='2' fill='%2348bb78'/%3E%3Ccircle cx='45' cy='20' r='13' fill='%23f6c744' stroke='%23b7791f' stroke-width='2.5'/%3E%3Ctext x='45' y='21' text-anchor='middle' dominant-baseline='central' font-family='Arial%2CHelvetica%2Csans-serif' font-weight='700' font-size='17' fill='%23744210'%3E%24%3C/text%3E%3C/svg%3E">
     <link rel="manifest" id="manifest-placeholder">
-    <title>Gestión de Finanzas Personales V3.6</title>
+    <title>Gestión de Finanzas Personales V3.7</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -131,6 +131,7 @@
                     window._appState.pocketPaymentsChecked = data.pocketPaymentsChecked || {};
                     window._appState.lastModified          = remoteLM;
                     console.log("🔄 Sincronización en tiempo real.");
+                    if (window.resetUndoHistory) window.resetUndoHistory();
                     if (window.loadData) window.loadData();
                 }
             }, err => console.warn("⚠️ Error en listener.", err));
@@ -165,7 +166,7 @@
 
     <div class="max-w-4xl mx-auto p-4 md:p-8">
         <header class="bg-white rounded-lg shadow-xl p-4 sticky top-4 z-50">
-            <h1 class="text-3xl md:text-4xl font-extrabold text-center text-blue-800">Finanzas Personales V3.6</h1>
+            <h1 class="text-3xl md:text-4xl font-extrabold text-center text-blue-800">Finanzas Personales V3.7</h1>
             <nav id="nav-links" class="flex justify-around items-center mt-4 p-2 bg-gray-800 rounded-lg shadow-inner">
                 <button onclick="showSection('dashboard')"     data-section="dashboard"     class="flex-1 text-center py-2 px-1 text-xs md:text-base font-semibold text-gray-400 hover:text-white hover:bg-gray-700 transition rounded-lg bg-gray-700">Dashboard</button>
                 <button onclick="showSection('register')"      data-section="register"      class="flex-1 text-center py-2 px-1 text-xs md:text-base font-semibold text-gray-400 hover:text-white hover:bg-gray-700 transition rounded-lg">Registro</button>
@@ -668,19 +669,29 @@ const makeSelectSearchable = (selectId) => {
     if (!window._undoStack) window._undoStack = [];
     if (!window._redoStack) window._redoStack = [];
 
+    // Modelo: cada acción llama saveState() ANTES de modificar los datos, así que
+    // _undoStack guarda el estado previo a cada acción. Deshacer restaura el último
+    // de esos estados (solo la última acción) y guarda el estado actual en _redoStack.
+    const UNDO_LIMIT = 20;
+    const takeSnapshot = () => JSON.parse(JSON.stringify({
+        accounts:              _st('accounts')              || [],
+        pockets:               _st('pockets')               || [],
+        transactions:          _st('transactions')          || [],
+        credit_cards:          _st('credit_cards')          || [],
+        saved_budgets:         _st('saved_budgets')         || [],
+        checkedTransactions:   _st('checkedTransactions')   || {},
+        pocketPaymentsChecked: _st('pocketPaymentsChecked') || {}
+    }));
+    const sameSnapshot = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+
     const saveState = () => {
         updateLastModified();
-        const snap = JSON.parse(JSON.stringify({
-            accounts:              _st('accounts')              || [],
-            pockets:               _st('pockets')               || [],
-            transactions:          _st('transactions')          || [],
-            credit_cards:          _st('credit_cards')          || [],
-            saved_budgets:         _st('saved_budgets')         || [],
-            checkedTransactions:   _st('checkedTransactions')   || {},
-            pocketPaymentsChecked: _st('pocketPaymentsChecked') || {}
-        }));
-        if (window._undoStack.length >= 10) window._undoStack.shift();
-        window._undoStack.push(snap);
+        const snap = takeSnapshot();
+        const top = window._undoStack[window._undoStack.length - 1];
+        if (!top || !sameSnapshot(top, snap)) {            // evita duplicados consecutivos
+            if (window._undoStack.length >= UNDO_LIMIT) window._undoStack.shift();
+            window._undoStack.push(snap);
+        }
         window._redoStack = [];
         updateUndoRedoButtonStates();
     };
@@ -696,23 +707,36 @@ const makeSelectSearchable = (selectId) => {
     };
 
     const updateUndoRedoButtonStates=()=>{
-        document.getElementById('undo-btn').disabled=window._undoStack.length<=1;
+        document.getElementById('undo-btn').disabled=window._undoStack.length===0;
         document.getElementById('redo-btn').disabled=window._redoStack.length===0;
+    };
+    window.updateUndoRedoButtonStates=updateUndoRedoButtonStates;
+    // Si llegan cambios desde otro dispositivo, el historial local deja de ser válido.
+    window.resetUndoHistory=()=>{window._undoStack=[];window._redoStack=[];updateUndoRedoButtonStates();};
+
+    const restoreSnapshot=(snap)=>{
+        Object.assign(window._appState, JSON.parse(JSON.stringify(snap)));
+        updateLastModified();                                // para que otros dispositivos detecten el cambio
+        syncToFirebase(); loadData();
     };
 
     window.undoLastAction=()=>{
-        if(window._undoStack.length<=1)return showMessage('No hay acciones para deshacer.','error');
-        const cur=window._undoStack.pop(), prev=window._undoStack[window._undoStack.length-1];
+        const cur=takeSnapshot();
+        // Descarta estados idénticos al actual (acciones que se cancelaron por una validación)
+        while(window._undoStack.length&&sameSnapshot(window._undoStack[window._undoStack.length-1],cur))window._undoStack.pop();
+        if(window._undoStack.length===0){updateUndoRedoButtonStates();return showMessage('No hay acciones para deshacer.','error');}
+        const prev=window._undoStack.pop();
         window._redoStack.push(cur);
-        Object.assign(window._appState, JSON.parse(JSON.stringify(prev)));
-        syncToFirebase(); loadData(); showMessage('Última acción deshecha.','success');
+        restoreSnapshot(prev); updateUndoRedoButtonStates();
+        showMessage('Última acción deshecha.','success');
     };
 
     window.redoLastAction=()=>{
         if(window._redoStack.length===0)return showMessage('No hay acciones para rehacer.','error');
-        const s=window._redoStack.pop(); window._undoStack.push(s);
-        Object.assign(window._appState, JSON.parse(JSON.stringify(s)));
-        syncToFirebase(); loadData(); showMessage('Acción rehecha.','success');
+        const next=window._redoStack.pop();
+        window._undoStack.push(takeSnapshot());
+        restoreSnapshot(next); updateUndoRedoButtonStates();
+        showMessage('Acción rehecha.','success');
     };
 
     // ════════════════════════════════════════════════════════════════
@@ -1625,7 +1649,7 @@ const makeSelectSearchable = (selectId) => {
         document.getElementById('date').value=new Date().toISOString().split('T')[0];
 
         // Historial inicial en memoria
-        window._undoStack=[JSON.parse(JSON.stringify(window._appState))];
+        window._undoStack=[];
         window._redoStack=[];
         updateUndoRedoButtonStates();
 

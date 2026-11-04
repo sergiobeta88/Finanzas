@@ -9,7 +9,7 @@
     <link rel="icon" type="image/svg+xml" id="app-favicon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%232b6cb0'/%3E%3Cstop offset='1' stop-color='%231a365d'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='14' fill='url%28%23g%29'/%3E%3Crect x='8' y='38' width='9' height='16' rx='2' fill='%239ae6b4'/%3E%3Crect x='20' y='30' width='9' height='24' rx='2' fill='%2368d391'/%3E%3Crect x='32' y='22' width='9' height='32' rx='2' fill='%2348bb78'/%3E%3Ccircle cx='45' cy='20' r='13' fill='%23f6c744' stroke='%23b7791f' stroke-width='2.5'/%3E%3Ctext x='45' y='21' text-anchor='middle' dominant-baseline='central' font-family='Arial%2CHelvetica%2Csans-serif' font-weight='700' font-size='17' fill='%23744210'%3E%24%3C/text%3E%3C/svg%3E">
     <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%232b6cb0'/%3E%3Cstop offset='1' stop-color='%231a365d'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='14' fill='url%28%23g%29'/%3E%3Crect x='8' y='38' width='9' height='16' rx='2' fill='%239ae6b4'/%3E%3Crect x='20' y='30' width='9' height='24' rx='2' fill='%2368d391'/%3E%3Crect x='32' y='22' width='9' height='32' rx='2' fill='%2348bb78'/%3E%3Ccircle cx='45' cy='20' r='13' fill='%23f6c744' stroke='%23b7791f' stroke-width='2.5'/%3E%3Ctext x='45' y='21' text-anchor='middle' dominant-baseline='central' font-family='Arial%2CHelvetica%2Csans-serif' font-weight='700' font-size='17' fill='%23744210'%3E%24%3C/text%3E%3C/svg%3E">
     <link rel="manifest" id="manifest-placeholder">
-    <title>Gestión de Finanzas Personales V3.1</title>
+    <title>Gestión de Finanzas Personales V3.2</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -165,7 +165,7 @@
 
     <div class="max-w-4xl mx-auto p-4 md:p-8">
         <header class="bg-white rounded-lg shadow-xl p-4 sticky top-4 z-50">
-            <h1 class="text-3xl md:text-4xl font-extrabold text-center text-blue-800">Finanzas Personales V3.1</h1>
+            <h1 class="text-3xl md:text-4xl font-extrabold text-center text-blue-800">Finanzas Personales V3.2</h1>
             <nav id="nav-links" class="flex justify-around items-center mt-4 p-2 bg-gray-800 rounded-lg shadow-inner">
                 <button onclick="showSection('dashboard')"     data-section="dashboard"     class="flex-1 text-center py-2 px-1 text-xs md:text-base font-semibold text-gray-400 hover:text-white hover:bg-gray-700 transition rounded-lg bg-gray-700">Dashboard</button>
                 <button onclick="showSection('register')"      data-section="register"      class="flex-1 text-center py-2 px-1 text-xs md:text-base font-semibold text-gray-400 hover:text-white hover:bg-gray-700 transition rounded-lg">Registro</button>
@@ -188,8 +188,7 @@
                     <div class="bg-white p-6 rounded-lg shadow-xl text-center"><h2 class="text-xl font-bold text-gray-700 mb-2">Total en Cuentas</h2><p id="total-all-accounts-balance" class="text-3xl font-extrabold text-green-600">$0</p></div>
                     <div class="bg-white p-6 rounded-lg shadow-xl text-center"><h2 class="text-xl font-bold text-gray-700 mb-2">Total en Bolsillos</h2><p id="total-pockets-balance" class="text-3xl font-extrabold text-green-600">$0</p></div>
                     <div class="bg-white p-6 rounded-lg shadow-xl text-center"><h2 class="text-xl font-bold text-gray-700 mb-2">Total Gastos Personales</h2><p id="total-personal-expenses-balance" class="text-3xl font-extrabold text-red-500">$0</p></div>
-                    <div class="bg-white p-6 rounded-lg shadow-xl text-center"><h2 class="text-xl font-bold text-gray-700 mb-2">Total Bolsillos Sobregiro</h2><p id="total-overdraft-pockets-balance" class="text-3xl font-extrabold text-yellow-600">$0</p></div>
-                    <div class="bg-white p-6 rounded-lg shadow-xl text-center col-span-1 lg:col-span-2"><h2 class="text-xl font-bold text-gray-700 mb-2">Balance Neto Total</h2><p id="combined-balance-monitor" class="text-3xl font-extrabold text-blue-600">$0</p></div>
+                                        <div class="bg-white p-6 rounded-lg shadow-xl text-center col-span-1 lg:col-span-3"><h2 class="text-xl font-bold text-gray-700 mb-2">Balance Neto Total</h2><p id="combined-balance-monitor" class="text-3xl font-extrabold text-blue-600">$0</p></div>
                 </div>
                 <div class="bg-white p-6 rounded-lg shadow-xl"><h2 class="text-2xl font-bold text-gray-700 mb-4">Monitor Específico</h2><div id="specific-account-monitor" class="text-center"></div></div>
                 <div class="bg-white p-6 rounded-lg shadow-xl"><h2 class="text-2xl font-bold text-gray-700 mb-4">Comparativa de Fondos</h2><canvas id="balanceChart" width="400" height="200"></canvas></div>
@@ -263,7 +262,7 @@
                 <form id="pocket-form" class="space-y-4 mb-6 p-4 bg-gray-50 rounded-lg">
                     <div><label for="pocket-name" class="block text-gray-700 font-bold mb-2">Nombre</label><input type="text" id="pocket-name" name="name" required class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300"></div>
                     <div><label for="pocket-initial-balance" class="block text-gray-700 font-bold mb-2">Saldo Inicial ($)</label><input type="text" id="pocket-initial-balance" name="initial_balance" required class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300"></div>
-                    <div><label for="pocket-type" class="block text-gray-700 font-bold mb-2">Tipo</label><select id="pocket-type" name="type" required class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300"><option value="ahorro">Bolsillo de Ahorro</option><option value="pagos">Bolsillo de Pagos</option><option value="gastos-personales">Bolsillo de Gastos Personales</option><option value="sobregiro">Bolsillo con Sobregiro</option></select></div>
+                    <div><label for="pocket-type" class="block text-gray-700 font-bold mb-2">Tipo</label><select id="pocket-type" name="type" required class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300"><option value="ahorro">Bolsillo de Ahorro</option><option value="pagos">Bolsillo de Pagos</option><option value="gastos-personales">Bolsillo de Gastos Personales</option></select></div>
                     <div id="pocket-payment-day-wrapper" class="hidden"><label for="pocket-payment-day" class="block text-gray-700 font-bold mb-2">Día de pago del mes (1-31)</label><input type="number" id="pocket-payment-day" name="payment_day" min="1" max="31" step="1" placeholder="Ej: 15" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300"><p class="text-xs text-gray-500 mt-1">Si el mes tiene menos días, se toma el último día del mes.</p></div>
                     <button type="submit" class="w-full bg-blue-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-600 transition">Guardar Bolsillo</button>
                 </form>
@@ -386,6 +385,7 @@
     <div id="multi-pocket-modal" class="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center hidden z-50"><div class="bg-white p-6 rounded-lg shadow-xl w-full max-w-lg"><h3 class="text-xl font-bold text-gray-700 mb-2">Distribuir Gasto</h3><p class="mb-4">Valor total: <span id="modal-expense-total" class="font-bold"></span></p><div id="distribution-list" class="space-y-2 mb-4 max-h-48 overflow-y-auto"></div><div class="p-4 bg-gray-50 rounded-lg mb-4"><div class="flex flex-col md:flex-row gap-2 items-end"><div class="flex-grow"><label for="modal-pocket-select" class="block text-sm font-bold text-gray-700">Bolsillo</label><select id="modal-pocket-select" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300"></select></div><div class="flex-grow"><label for="modal-pocket-amount" class="block text-sm font-bold text-gray-700">Monto</label><input type="text" id="modal-pocket-amount" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300"></div><button type="button" id="modal-add-pocket-btn" class="bg-blue-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-600 transition">Añadir</button></div></div><div class="text-right font-bold mb-4"><p>Cubierto: <span id="modal-amount-covered" class="text-green-600">$0.00</span></p><p>Restante: <span id="modal-amount-remaining" class="text-red-500">$0.00</span></p></div><div class="flex justify-end space-x-4"><button id="modal-cancel-distribution-btn" type="button" class="bg-gray-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-gray-600 transition">Cancelar</button><button id="modal-confirm-distribution-btn" type="button" class="bg-green-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-green-600 transition disabled:opacity-50" disabled>Confirmar</button></div></div></div>
     <div id="pay-monthly-installment-modal" class="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center hidden z-50"><div class="bg-white p-6 rounded-lg shadow-xl w-full max-w-sm"><h3 class="text-xl font-bold text-gray-700 mb-4">Pagar Cuota Mensual</h3><div class="space-y-4"><div><label for="installment-pay-period" class="block text-gray-700 font-bold mb-2">Seleccionar Mes</label><select id="installment-pay-period" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300"></select></div><div class="text-right pt-4 space-x-4"><button onclick="closeMonthlyPayModal()" class="bg-gray-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-gray-600 transition">Cancelar</button><button id="monthly-installment-confirm-btn" class="bg-green-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-green-600 transition">Pagar Cuota</button></div></div></div></div>
     <div id="adjust-card-balance-modal" class="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center hidden z-50"><div class="bg-white p-6 rounded-lg shadow-xl w-full max-w-sm"><h3 class="text-xl font-bold text-gray-700 mb-4">Ajustar Saldo Manual</h3><div class="space-y-4"><div><label for="adjust-balance-value" class="block text-gray-700 font-bold mb-2">Nuevo Saldo ($)</label><input type="text" id="adjust-balance-value" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300"></div><div class="text-right pt-4 space-x-4"><button onclick="closeAdjustBalanceModal()" class="bg-gray-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-gray-600 transition">Cancelar</button><button id="adjust-balance-confirm-btn" class="bg-blue-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-600 transition">Actualizar Saldo</button></div></div></div></div>
+    <div id="edit-item-modal" class="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center hidden z-50 p-4"><div class="bg-white p-6 rounded-lg shadow-xl w-full max-w-md max-h-full overflow-y-auto"><h3 id="edit-item-title" class="text-xl font-bold text-gray-700 mb-4">Editar</h3><form id="edit-item-form" class="space-y-4" novalidate><input type="hidden" id="edit-item-id"><input type="hidden" id="edit-item-col"><div><label for="edit-item-name" class="block text-gray-700 font-bold mb-2">Nombre</label><input type="text" id="edit-item-name" required class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300"></div><div><label for="edit-item-balance" class="block text-gray-700 font-bold mb-2">Saldo ($)</label><input type="text" id="edit-item-balance" required class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300"><p class="text-xs text-gray-500 mt-1">Cambiar el saldo aquí lo ajusta directamente, sin registrar un movimiento.</p></div><div><label for="edit-item-type" class="block text-gray-700 font-bold mb-2">Tipo</label><select id="edit-item-type" required class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300"></select></div><div id="edit-item-payment-day-wrapper" class="hidden"><label for="edit-item-payment-day" class="block text-gray-700 font-bold mb-2">Día de pago del mes (1-31)</label><input type="number" id="edit-item-payment-day" min="1" max="31" step="1" placeholder="Ej: 15" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300"><p class="text-xs text-gray-500 mt-1">Si el mes tiene menos días, se toma el último día del mes.</p></div><div class="flex justify-end space-x-4 pt-2"><button type="button" id="edit-item-cancel-btn" class="bg-gray-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-gray-600 transition">Cancelar</button><button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-600 transition">Guardar Cambios</button></div></form></div></div>
     <div id="edit-transaction-modal" class="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center hidden z-50"><div class="bg-white p-6 rounded-lg shadow-xl w-full max-w-lg"><h3 class="text-xl font-bold text-gray-700 mb-4">Editar Movimiento</h3><form id="edit-transaction-form" class="space-y-4"><input type="hidden" id="edit-tx-id"><input type="hidden" id="edit-tx-original-data"><div><label for="edit-concept" class="block text-gray-700 font-bold mb-2">Concepto</label><input type="text" id="edit-concept" required class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300"></div><div><label for="edit-date" class="block text-gray-700 font-bold mb-2">Día</label><input type="date" id="edit-date" required class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300"></div><div><label for="edit-value" class="block text-gray-700 font-bold mb-2">Valor ($)</label><input type="text" id="edit-value" required class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300"></div><div id="edit-income-expense-fields" class="hidden"><label class="block text-gray-700 font-bold mb-2">Tipo</label><p id="edit-type-label" class="font-semibold text-lg p-2 bg-gray-100 rounded"></p><div><label for="edit-afecta-cuenta" class="block text-gray-700 font-bold mb-2">Cuenta (opcional)</label><select id="edit-afecta-cuenta" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300"></select></div><div><label for="edit-afecta-bolsillo" class="block text-gray-700 font-bold mb-2">Bolsillo (opcional)</label><select id="edit-afecta-bolsillo" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300"></select></div></div><div id="edit-transfer-fields" class="hidden"><p class="font-semibold text-lg p-2 bg-gray-100 rounded">Transferencia</p><div><label class="block text-gray-700 font-bold mb-2">Origen</label><div class="flex space-x-2"><select id="edit-transfer-source-account" class="w-1/2 px-4 py-2 border rounded-lg"></select><select id="edit-transfer-source-pocket" class="w-1/2 px-4 py-2 border rounded-lg"></select></div></div><div><label class="block text-gray-700 font-bold mb-2">Destino</label><div class="flex space-x-2"><select id="edit-transfer-destination-account" class="w-1/2 px-4 py-2 border rounded-lg"></select><select id="edit-transfer-destination-pocket" class="w-1/2 px-4 py-2 border rounded-lg"></select></div></div></div><div id="edit-distributed-expense-fields" class="hidden space-y-3"><p class="p-3 bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 rounded text-sm">Gasto distribuido: puedes cambiar los bolsillos y sus montos. La suma no puede superar el valor del movimiento.</p><div id="edit-distribution-rows" class="space-y-2 max-h-56 overflow-y-auto"></div><button type="button" id="edit-add-distribution-row" class="w-full bg-blue-100 text-blue-700 px-3 py-2 rounded-lg font-semibold hover:bg-blue-200 transition text-sm">+ Añadir bolsillo</button><div class="text-right text-sm font-bold"><p>Cubierto: <span id="edit-dist-covered" class="text-green-600">$0</span></p><p>Restante: <span id="edit-dist-remaining" class="text-red-500">$0</span></p></div></div><div class="flex justify-end space-x-4 mt-6"><button type="button" id="edit-modal-cancel-btn" class="bg-gray-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-gray-600 transition">Cancelar</button><button type="submit" id="edit-modal-save-btn" class="bg-blue-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-600 transition">Guardar Cambios</button></div></form></div></div>
 
     <script>
@@ -409,9 +409,8 @@
         return new Intl.NumberFormat('es-CO', { style:'currency', currency:'COP', minimumFractionDigits:2 }).format(num);
     };
     // ─── Regla: ningún bolsillo puede quedar en negativo ────────────
-    // Excepción: tipos listados aquí (por diseño). Para bloquear también los
-    // bolsillos tipo "sobregiro", deja el arreglo vacío: [].
-    const OVERDRAFT_ALLOWED_TYPES = ['sobregiro'];
+    // Sin excepciones: ningún tipo de bolsillo admite sobregiro.
+    const OVERDRAFT_ALLOWED_TYPES = [];
     const pocketAllowsOverdraft = (p) => !!p && OVERDRAFT_ALLOWED_TYPES.includes(p.type);
     const assertNoPocketOverdraft = (before, after) => {
         const bad = after.filter(p => {
@@ -504,7 +503,11 @@
     const sections=['dashboard','register','accounts','pockets','transfers','credit-cards','automation','history-view','help'];
     const monthNames=["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
     const ACCOUNT_TYPES={prestamo_account:'Cuenta de Préstamo',anticipos:'Cuenta de Anticipos',virtual:'Cuenta Vida Real'};
-    const POCKET_TYPES={ahorro:'Ahorro',pagos:'Pagos',gastos_personales:'Gastos Personales',sobregiro:'Sobregiro'};
+    const POCKET_TYPES={ahorro:'Ahorro',pagos:'Pagos','gastos-personales':'Gastos Personales'};
+    // Orden único para todos los listados de bolsillos: Ahorro → Pagos → Gastos Personales (alfabético dentro de cada tipo)
+    const POCKET_TYPE_ORDER={ahorro:1,pagos:2,'gastos-personales':3};
+    const sortPockets=(list)=>[...(list||[])].filter(p=>p&&p.name).sort((a,b)=>((POCKET_TYPE_ORDER[a.type]||9)-(POCKET_TYPE_ORDER[b.type]||9))||String(a.name).localeCompare(String(b.name),'es',{sensitivity:'base'}));
+    const pocketTypeLabel=(p)=>POCKET_TYPES[p.type]||'Sin tipo';
 
     let activeAutomationBudgetId=null, confirmCallback=null, previousSection='dashboard';
     // checkedTransactions y pocketPaymentsChecked se leen desde _appState
@@ -748,7 +751,6 @@ const makeSelectSearchable = (selectId) => {
         const totAcc=accounts.reduce((a,c)=>a+c.balance,0);
         const totPock=pockets.reduce((a,c)=>a+c.balance,0);
         const totPersExp=pockets.filter(p=>p.type==='gastos-personales').reduce((a,c)=>a+c.balance,0);
-        const totOvrd=pockets.filter(p=>p.type==='sobregiro').reduce((a,c)=>a+c.balance,0);
         const savBal=pockets.filter(p=>p.type==='ahorro').reduce((a,c)=>a+c.balance,0);
         const expBal=pockets.filter(p=>p.type==='gastos-personales').reduce((a,c)=>a+c.balance,0);
         const payBal=pockets.filter(p=>p.type==='pagos').reduce((a,c)=>a+c.balance,0);
@@ -758,7 +760,6 @@ const makeSelectSearchable = (selectId) => {
         document.getElementById('total-all-accounts-balance').textContent=formatNumber(totAcc);
         document.getElementById('total-pockets-balance').textContent=formatNumber(totPock);
         document.getElementById('total-personal-expenses-balance').textContent=formatNumber(totPersExp);
-        document.getElementById('total-overdraft-pockets-balance').textContent=formatNumber(totOvrd);
         document.getElementById('combined-balance-monitor').textContent=formatNumber(combined);
 
         const specAcc=accounts.find(a=>a.name.toLowerCase()==="banco ahorro occidente");
@@ -855,7 +856,7 @@ const makeSelectSearchable = (selectId) => {
         cs.innerHTML='<option value="" selected>Seleccione una cuenta (opcional)</option>';
         bs.innerHTML='<option value="" selected>Seleccione un bolsillo (opcional)</option>';
         accounts.forEach(a=>cs.innerHTML+=`<option value="${a.id}">${a.name} (${ACCOUNT_TYPES[a.type]||a.type}) (${formatNumber(a.balance)})</option>`);
-        pockets.forEach(p=>bs.innerHTML+=`<option value="${p.id}">${p.name} (${POCKET_TYPES[p.type]||p.type}) (${formatNumber(p.balance)})</option>`);
+        sortPockets(pockets).forEach(p=>bs.innerHTML+=`<option value="${p.id}">${p.name} (${pocketTypeLabel(p)}) (${formatNumber(p.balance)})</option>`);
     };
 
     const renderAccounts=(accounts)=>{
@@ -875,8 +876,8 @@ const makeSelectSearchable = (selectId) => {
 
     const renderPockets=(pockets)=>{
         const c=document.getElementById('pockets-list'); c.innerHTML='';
-        [...pockets].sort((a,b)=>({ahorro:1,pagos:2,'gastos-personales':3,sobregiro:4}[a.type]-{ahorro:1,pagos:2,'gastos-personales':3,sobregiro:4}[b.type])).forEach(p=>{
-            c.innerHTML+=`<div class="bg-gray-100 p-4 rounded-lg shadow-md flex justify-between items-center mb-2"><div><p class="font-bold">${p.name} <span class="text-xs font-normal text-gray-500">(${POCKET_TYPES[p.type]||p.type})</span></p><p class="text-sm text-gray-600">Saldo: ${formatNumber(p.balance)}</p>${p.type==='pagos'?`<p class="text-xs text-gray-500">📅 Día de pago: ${p.paymentDay||'sin definir'}</p>`:''}</div><div class="flex space-x-2"><button onclick="showHistoryFor('pocket','${p.id}')" class="bg-blue-500 text-white px-3 py-1 rounded-full text-xs hover:bg-blue-600 transition">Historial</button><button onclick="editItem('${p.id}','pockets')" class="bg-yellow-500 text-white px-3 py-1 rounded-full text-xs hover:bg-yellow-600 transition">Editar</button><button onclick="deleteItem('${p.id}','pockets')" class="bg-red-500 text-white px-3 py-1 rounded-full text-xs hover:bg-red-600 transition">Eliminar</button></div></div>`;
+        sortPockets(pockets).forEach(p=>{
+            c.innerHTML+=`<div class="bg-gray-100 p-4 rounded-lg shadow-md flex justify-between items-center mb-2"><div><p class="font-bold">${p.name} <span class="text-xs font-normal text-gray-500">(${pocketTypeLabel(p)})</span></p>${POCKET_TYPES[p.type]?'':`<p class="text-xs font-semibold text-red-600">⚠ Tipo no válido: edítalo y asígnale un tipo</p>`}<p class="text-sm text-gray-600">Saldo: ${formatNumber(p.balance)}</p>${p.type==='pagos'?`<p class="text-xs text-gray-500">📅 Día de pago: ${p.paymentDay||'sin definir'}</p>`:''}</div><div class="flex space-x-2"><button onclick="showHistoryFor('pocket','${p.id}')" class="bg-blue-500 text-white px-3 py-1 rounded-full text-xs hover:bg-blue-600 transition">Historial</button><button onclick="editItem('${p.id}','pockets')" class="bg-yellow-500 text-white px-3 py-1 rounded-full text-xs hover:bg-yellow-600 transition">Editar</button><button onclick="deleteItem('${p.id}','pockets')" class="bg-red-500 text-white px-3 py-1 rounded-full text-xs hover:bg-red-600 transition">Eliminar</button></div></div>`;
         });
     };
 
@@ -884,7 +885,7 @@ const makeSelectSearchable = (selectId) => {
         const ids=['transfer-source-account','transfer-source-pocket','transfer-destination-account','transfer-destination-pocket','purchase-pocket','edit-transfer-source-account','edit-transfer-source-pocket','edit-transfer-destination-account','edit-transfer-destination-pocket'];
         const sels=ids.map(id=>document.getElementById(id)); sels.forEach(s=>{if(s)s.innerHTML='';});
         const aOpts=['<option value="" disabled selected>Cuenta</option>']; accounts.forEach(a=>aOpts.push(`<option value="${a.id}">${a.name} (${ACCOUNT_TYPES[a.type]||a.type}) (${formatNumber(a.balance)})</option>`));
-        const pOpts=['<option value="" disabled selected>Bolsillo</option>']; pockets.forEach(p=>pOpts.push(`<option value="${p.id}">${p.name} (${POCKET_TYPES[p.type]||p.type}) (${formatNumber(p.balance)})</option>`));
+        const pOpts=['<option value="" disabled selected>Bolsillo</option>']; sortPockets(pockets).forEach(p=>pOpts.push(`<option value="${p.id}">${p.name} (${pocketTypeLabel(p)}) (${formatNumber(p.balance)})</option>`));
         [0,2,5,7].forEach(i=>{if(sels[i])sels[i].innerHTML=aOpts.join('');});
         [1,3,6,8].forEach(i=>{if(sels[i])sels[i].innerHTML=pOpts.join('');});
         if(sels[4])sels[4].innerHTML='<option value="" selected>No usar bolsillo</option>'+pOpts.slice(1).join('');
@@ -896,7 +897,7 @@ const makeSelectSearchable = (selectId) => {
         const creditCards=getCreditCards(), curMY=`${new Date().getFullYear()}-${new Date().getMonth()}`;
         const renderItem=(p)=>{
             let colorClass='text-gray-600',statusTag='',checkboxHtml='',itemClasses='',dueHtml='';
-            if(p.type==='ahorro')colorClass='text-blue-500'; else if(p.type==='pagos')colorClass='text-red-500'; else if(p.type==='gastos-personales')colorClass='text-orange-500'; else if(p.type==='sobregiro')colorClass='text-yellow-600';
+            if(p.type==='ahorro')colorClass='text-blue-500'; else if(p.type==='pagos')colorClass='text-red-500'; else if(p.type==='gastos-personales')colorClass='text-orange-500';
             let needed=0;
             if(p.type==='pagos')creditCards.forEach(card=>card.purchases.forEach(pur=>{if(pur.pocketId===p.id&&!isNewPurchase(pur.date)&&(pur.remainingBiWeekly>0||pur.isRecurring))needed+=pur.biWeeklyPayment;}));
             const insuff=needed>0&&p.balance<needed;
@@ -910,7 +911,7 @@ const makeSelectSearchable = (selectId) => {
             }
             return `<div class="flex justify-between items-center py-2 border-b border-gray-200 last:border-b-0 ${itemClasses}"><div><p class="font-bold">${p.name}</p><p class="${colorClass} font-semibold">${formatNumber(p.balance)}</p>${statusTag}${dueHtml}</div><div class="flex flex-col items-end space-y-1">${checkboxHtml}<button onclick="showHistoryFor('pocket','${p.id}')" class="bg-blue-500 text-white px-3 py-1 rounded-full text-xs hover:bg-blue-600 transition">Ver Historial</button></div></div>`;
         };
-        const sv=pockets.filter(p=>p.type==='ahorro'), pv=pockets.filter(p=>p.type==='pagos').sort((a,b)=>(parseInt(a.paymentDay,10)||99)-(parseInt(b.paymentDay,10)||99)), ev=pockets.filter(p=>p.type==='gastos-personales');
+        const sv=sortPockets(pockets).filter(p=>p.type==='ahorro'), pv=pockets.filter(p=>p.type==='pagos').sort((a,b)=>(parseInt(a.paymentDay,10)||99)-(parseInt(b.paymentDay,10)||99)), ev=sortPockets(pockets).filter(p=>p.type==='gastos-personales');
         sC.innerHTML=sv.length===0?`<p class="text-sm text-gray-500">No hay bolsillos de ahorro.</p>`:sv.map(renderItem).join('');
         pC.innerHTML=pv.length===0?`<p class="text-sm text-gray-500">No hay bolsillos de pagos.</p>`:pv.map(renderItem).join('');
         eC.innerHTML=ev.length===0?`<p class="text-sm text-gray-500">No hay bolsillos de gastos personales.</p>`:ev.map(renderItem).join('');
@@ -974,7 +975,7 @@ const makeSelectSearchable = (selectId) => {
             const key=`${year}-${month}-${fortnight}`;
             if(pocket.biweeklyPaymentHistory&&pocket.biweeklyPaymentHistory[key])return;
             let total=0; creditCards.forEach(card=>card.purchases.forEach(p=>{if(p.pocketId===pocket.id&&!isNewPurchase(p.date)&&(p.remainingBiWeekly>0||p.isRecurring))total+=p.biWeeklyPayment;}));
-            if(total>0){if(pocket.balance<total&&pocket.type!=='sobregiro'){showMessage(`Saldo insuficiente en ${pocket.name}.`,'error');return;}pocket.balance-=total;if(!pocket.biweeklyPaymentHistory)pocket.biweeklyPaymentHistory={};pocket.biweeklyPaymentHistory[key]=total;totalDeducted+=total;summary.push(`${pocket.name}: ${formatNumber(total)}`);transactions.push({id:crypto.randomUUID(),date:new Date().toISOString().split('T')[0],concept:`Reserva quincenal ${fortnight==='first'?'primera':'segunda'} quincena de ${monthNames[month]} ${year} desde ${pocket.name}`,value:total,type:'expense',pocketId:pocket.id,finalPocketBalance:pocket.balance,createdAt:new Date().toISOString()});}
+            if(total>0){if(pocket.balance<total){showMessage(`Saldo insuficiente en ${pocket.name}.`,'error');return;}pocket.balance-=total;if(!pocket.biweeklyPaymentHistory)pocket.biweeklyPaymentHistory={};pocket.biweeklyPaymentHistory[key]=total;totalDeducted+=total;summary.push(`${pocket.name}: ${formatNumber(total)}`);transactions.push({id:crypto.randomUUID(),date:new Date().toISOString().split('T')[0],concept:`Reserva quincenal ${fortnight==='first'?'primera':'segunda'} quincena de ${monthNames[month]} ${year} desde ${pocket.name}`,value:total,type:'expense',pocketId:pocket.id,finalPocketBalance:pocket.balance,createdAt:new Date().toISOString()});}
         });
         if(totalDeducted>0){_set('pockets',pockets);_set('transactions',transactions);syncToFirebase();loadData();showMessage(`Reservados ${formatNumber(totalDeducted)}. ${summary.join(', ')}.`,'success');}
         else showMessage('No hay cuotas pendientes o ya fueron deducidas.','error');
@@ -985,7 +986,7 @@ const makeSelectSearchable = (selectId) => {
         const cs=document.getElementById('transfer-installment-card'), ps=document.getElementById('transfer-installment-destination'), ms=document.getElementById('transfer-installment-month');
         cs.innerHTML='<option value="" disabled selected>Seleccione una tarjeta</option>'; ps.innerHTML='<option value="" disabled selected>Seleccione un bolsillo</option>'; ms.innerHTML='';
         creditCards.forEach(c=>cs.innerHTML+=`<option value="${c.id}">${c.name}</option>`);
-        pockets.forEach(p=>ps.innerHTML+=`<option value="${p.id}">${p.name} (${POCKET_TYPES[p.type]||p.type}) (${formatNumber(p.balance)})</option>`);
+        sortPockets(pockets).forEach(p=>ps.innerHTML+=`<option value="${p.id}">${p.name} (${pocketTypeLabel(p)}) (${formatNumber(p.balance)})</option>`);
         const now=new Date(),cm=now.getMonth(),cy=now.getFullYear();
         for(let i=-11;i<=11;i++){const d=new Date(cy,cm+i,1);const o=document.createElement('option');o.value=d.getMonth();o.dataset.year=d.getFullYear();o.textContent=`${monthNames[d.getMonth()]} ${d.getFullYear()}`;if(i===0)o.selected=true;ms.appendChild(o);}
     };
@@ -1053,7 +1054,7 @@ const makeSelectSearchable = (selectId) => {
         let srcItem=srcType==='account'?accounts.find(i=>i.id===srcId):pockets.find(i=>i.id===srcId);
         let dstItem=dstType==='account'?accounts.find(i=>i.id===dstId):pockets.find(i=>i.id===dstId);
         if(!srcItem||!dstItem)return showMessage('Origen o destino no encontrado.','error');
-        if(srcItem.type!=='sobregiro'&&srcItem.balance<value)return showMessage('Saldo insuficiente en el origen.','error');
+        if(srcItem.balance<value)return showMessage('Saldo insuficiente en el origen.','error');
         const isVirtual=srcType==='account'&&srcItem.type==='virtual'&&dstType==='pocket';
         if(!isVirtual)srcItem.balance-=value; dstItem.balance+=value;
         _set('accounts',accounts); _set('pockets',pockets);
@@ -1096,7 +1097,7 @@ const makeSelectSearchable = (selectId) => {
         if(!document.getElementById('pocket-budget-inputs')||pockets.length!==document.getElementById('pocket-budget-inputs').children.length){
             budgetForm.innerHTML=`<div id="pocket-budget-inputs"></div><div id="automation-summary" class="hidden mt-6 p-4 border rounded-lg bg-white shadow-inner"><h4 class="text-lg font-bold text-gray-700 mb-2">Resumen:</h4><ul id="automation-summary-list" class="space-y-1"></ul><hr class="my-2 border-gray-300"><div class="flex justify-between font-bold text-lg"><span>Total:</span><span id="automation-total-summary" class="text-blue-600"></span></div></div><button type="submit" class="w-full bg-blue-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-600 transition mt-6">Guardar Cambios</button>`;
             const pi=document.getElementById('pocket-budget-inputs');
-            pockets.forEach(p=>{pi.innerHTML+=`<div class="mb-4"><label class="block text-gray-700 font-bold mb-2">${p.name}</label><input type="text" name="pocket_${p.id}" value="" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300 automation-input" placeholder="Valor a provisionar"></div>`;});
+            sortPockets(pockets).forEach(p=>{pi.innerHTML+=`<div class="mb-4"><label class="block text-gray-700 font-bold mb-2">${p.name} <span class="text-xs font-normal text-gray-500">(${pocketTypeLabel(p)})</span></label><input type="text" name="pocket_${p.id}" value="" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300 automation-input" placeholder="Valor a provisionar"></div>`;});
             applyNumberFormatting('.automation-input');
             document.querySelectorAll('.automation-input').forEach(i=>i.addEventListener('input',()=>updateAutomationSummary(getFormDataAsBudgetObject())));
         }
@@ -1280,11 +1281,58 @@ const makeSelectSearchable = (selectId) => {
     };
 
     window.editItem=(itemId,colName)=>{
+        if(colName==='accounts'||colName==='pockets')return openEditItemModal(itemId,colName);
         let items=(colName==='credit_cards'?getCreditCards():(colName==='accounts'?getAccounts():getPockets())).filter(i=>i&&i.id);
         const item=items.find(i=>i.id===itemId);
         if(item){const formId=colName==='credit_cards'?'create-card-form':`${colName.replace('_cards','').slice(0,-1)}-form`;const form=document.getElementById(formId);if(!form)return;form.dataset.editingId=itemId;if(form.name)form.name.value=item.name;if(form.initial_balance)form.initial_balance.value=(item.balance||0).toLocaleString('es-CO');if(form.type)form.type.value=item.type;if(colName==='pockets'){document.getElementById('pocket-payment-day').value=item.paymentDay||'';togglePocketPaymentDay();}showSection(colName==='credit_cards'?'credit-cards':colName);}
         else showMessage('Elemento no encontrado.','error');
     };
+
+    // ── Ventana de edición de cuentas y bolsillos ────────────────────
+    const toggleEditItemPaymentDay=()=>{
+        const isP=document.getElementById('edit-item-col').value==='pockets'&&document.getElementById('edit-item-type').value==='pagos';
+        document.getElementById('edit-item-payment-day-wrapper').classList.toggle('hidden',!isP);
+    };
+    const closeEditItemModal=()=>document.getElementById('edit-item-modal').classList.add('hidden');
+    window.openEditItemModal=(itemId,colName)=>{
+        const isPocket=colName==='pockets', item=(isPocket?getPockets():getAccounts()).find(i=>i&&i.id===itemId);
+        if(!item)return showMessage('Elemento no encontrado.','error');
+        const types=isPocket?POCKET_TYPES:ACCOUNT_TYPES, ts=document.getElementById('edit-item-type');
+        ts.innerHTML=(types[item.type]?'':'<option value="" selected disabled>Seleccione un tipo…</option>')+Object.entries(types).map(([k,v])=>`<option value="${k}" ${k===item.type?'selected':''}>${isPocket?'Bolsillo de ':''}${v}</option>`).join('');
+        document.getElementById('edit-item-title').textContent=`Editar ${isPocket?'bolsillo':'cuenta'}: ${item.name}`;
+        document.getElementById('edit-item-id').value=item.id;
+        document.getElementById('edit-item-col').value=colName;
+        document.getElementById('edit-item-name').value=item.name;
+        document.getElementById('edit-item-balance').value=(item.balance||0).toLocaleString('es-CO');
+        document.getElementById('edit-item-payment-day').value=item.paymentDay||'';
+        toggleEditItemPaymentDay();
+        document.getElementById('edit-item-modal').classList.remove('hidden');
+        setTimeout(()=>document.getElementById('edit-item-name').focus(),50);
+    };
+    document.getElementById('edit-item-type').addEventListener('change',toggleEditItemPaymentDay);
+    document.getElementById('edit-item-cancel-btn').addEventListener('click',closeEditItemModal);
+    document.getElementById('edit-item-modal').addEventListener('click',(e)=>{if(e.target.id==='edit-item-modal')closeEditItemModal();});
+    document.addEventListener('keydown',(e)=>{if(e.key==='Escape'&&!document.getElementById('edit-item-modal').classList.contains('hidden'))closeEditItemModal();});
+    document.getElementById('edit-item-form').addEventListener('submit',(e)=>{
+        e.preventDefault();
+        const id=document.getElementById('edit-item-id').value, col=document.getElementById('edit-item-col').value, isPocket=col==='pockets';
+        const name=document.getElementById('edit-item-name').value.trim(), type=document.getElementById('edit-item-type').value;
+        const balRaw=document.getElementById('edit-item-balance').value.trim();
+        const bal=(balRaw.startsWith('-')?-1:1)*parseFormattedNumber(balRaw); // conserva el signo de saldos negativos existentes
+        const pdRaw=document.getElementById('edit-item-payment-day').value.trim(), pd=parseInt(pdRaw,10);
+        if(!name)return showMessage('El nombre es obligatorio.','error');
+        if(!type)return showMessage('Selecciona un tipo.','error');
+        if(isPocket&&type==='pagos'&&(isNaN(pd)||pd<1||pd>31))return showMessage('Indica el día de pago (1 a 31) del bolsillo de pagos.','error');
+        const list=isPocket?getPockets():getAccounts(), idx=list.findIndex(i=>i&&i.id===id);
+        if(idx===-1)return showMessage('Elemento no encontrado.','error');
+        if(list.some((i,k)=>k!==idx&&i&&i.name&&i.name.trim().toLowerCase()===name.toLowerCase()))return showMessage(`Ya existe ${isPocket?'un bolsillo':'una cuenta'} con ese nombre.`,'error');
+        if(isPocket&&bal<0&&bal<list[idx].balance)return showMessage('El saldo de un bolsillo no puede ser negativo.','error');
+        saveState();
+        Object.assign(list[idx],{name,balance:bal,type});
+        if(isPocket){if(type==='pagos')list[idx].paymentDay=pd;else delete list[idx].paymentDay;}
+        _set(col,list); syncToFirebase(); loadData(); closeEditItemModal();
+        showMessage(isPocket?'Bolsillo actualizado.':'Cuenta actualizada.');
+    });
 
     window.deleteItem=(itemId,colName)=>{
         const getter=colName==='credit_cards'?getCreditCards:colName==='accounts'?getAccounts:getPockets;
@@ -1331,7 +1379,7 @@ const makeSelectSearchable = (selectId) => {
         if(totalExpense<=0)return showMessage('Ingrese un valor de gasto válido primero.','error');
         distribution=[];
         const pockets=getPockets(), mps=document.getElementById('modal-pocket-select');
-        mps.innerHTML=''; pockets.forEach(p=>mps.innerHTML+=`<option value="${p.id}">${p.name} (${formatNumber(p.balance)})</option>`);
+        mps.innerHTML=''; sortPockets(pockets).forEach(p=>mps.innerHTML+=`<option value="${p.id}">${p.name} (${pocketTypeLabel(p)}) (${formatNumber(p.balance)})</option>`);
         document.getElementById('modal-expense-total').textContent=formatNumber(totalExpense);
         updateDistributionUI(); document.getElementById('multi-pocket-modal').classList.remove('hidden');
     });
@@ -1341,7 +1389,7 @@ const makeSelectSearchable = (selectId) => {
         const pockets=getPockets(), pocket=pockets.find(p=>p.id===pocketId);
         if(!pocketId||amount<=0)return showMessage('Seleccione un bolsillo e ingrese un monto válido.','error');
         distribution=distribution.filter(d=>d.pocketId!==pocketId);
-        if(amount>pocket.balance&&pocket.type!=='sobregiro')return showMessage('El monto excede el saldo del bolsillo.','error');
+        if(amount>pocket.balance)return showMessage('El monto excede el saldo del bolsillo.','error');
         distribution.push({pocketId,value:amount,name:pocket.name}); updateDistributionUI(); document.getElementById('modal-pocket-amount').value='';
     });
 
@@ -1395,7 +1443,7 @@ const makeSelectSearchable = (selectId) => {
             cs.innerHTML='<option value="">Ninguna</option>';
             bs.innerHTML='<option value="">Ninguno</option>';
             accounts.forEach(a=>cs.innerHTML+=`<option value="${a.id}">${a.name} (${ACCOUNT_TYPES[a.type]||a.type}) (${a.balance.toLocaleString('es-CO')})</option>`);
-            pockets.forEach(p=>bs.innerHTML+=`<option value="${p.id}">${p.name} (${POCKET_TYPES[p.type]||p.type}) (${p.balance.toLocaleString('es-CO')})</option>`);
+            sortPockets(pockets).forEach(p=>bs.innerHTML+=`<option value="${p.id}">${p.name} (${pocketTypeLabel(p)}) (${p.balance.toLocaleString('es-CO')})</option>`);
             cs.value=tx.accountId||'';
             bs.value=tx.pocketId||'';
         }
@@ -1424,7 +1472,7 @@ const makeSelectSearchable = (selectId) => {
     const setupEditDistribution=(tx)=>{
         // Saldos disponibles = saldos actuales con el movimiento original revertido
         const accC=getAccounts(), pC=getPockets(); revertTransaction(tx,accC,pC);
-        editDistPockets=pC.filter(p=>p&&p.name);
+        editDistPockets=sortPockets(pC);
         document.getElementById('edit-distribution-rows').innerHTML='';
         tx.distribution.forEach(d=>buildEditDistRow(d.pocketId,d.value));
         updateEditDistSummary();
@@ -1465,7 +1513,7 @@ const makeSelectSearchable = (selectId) => {
                 const di=ndt==='account'?accounts.find(i=>i.id===ndId):pockets.find(i=>i.id===ndId);
                 if(!si||!di)throw new Error('Origen o destino no encontrados.');
                 const isVirtual=nst==='account'&&si.type==='virtual'&&ndt==='pocket';
-                if(!isVirtual&&si.type!=='sobregiro'&&si.balance<nv)throw new Error('Saldo insuficiente en el nuevo origen.');
+                if(!isVirtual&&si.balance<nv)throw new Error('Saldo insuficiente en el nuevo origen.');
                 updatedTx={...updatedTx,concept:nc,date:nd,value:nv,sourceId:nsId,sourceType:nst,destinationId:ndId,destinationType:ndt};
             } else {
                 const naId=form.querySelector('#edit-afecta-cuenta')?.value||originalTx.accountId||null;
@@ -1477,7 +1525,7 @@ const makeSelectSearchable = (selectId) => {
                     updatedTx.distribution=dist;
                 } else {
                     if(!naId&&!npId)throw new Error('Debe seleccionar al menos una cuenta o un bolsillo.');
-                    if(originalTx.type==='expense'){if(naId){const a=accounts.find(a=>a.id===naId);if(a.balance<nv)throw new Error('Saldo insuficiente en la cuenta.');}if(npId){const p=pockets.find(p=>p.id===npId);if(p.balance<nv&&p.type!=='sobregiro')throw new Error('Saldo insuficiente en el bolsillo.');}}
+                    if(originalTx.type==='expense'){if(naId){const a=accounts.find(a=>a.id===naId);if(a.balance<nv)throw new Error('Saldo insuficiente en la cuenta.');}if(npId){const p=pockets.find(p=>p.id===npId);if(p.balance<nv)throw new Error('Saldo insuficiente en el bolsillo.');}}
                     updatedTx.accountId=naId; updatedTx.pocketId=npId;
                 }
                 updatedTx={...updatedTx,concept:nc,date:nd,value:nv};
@@ -1562,7 +1610,7 @@ const makeSelectSearchable = (selectId) => {
         renderRegisterOptions(accounts,pockets);
         renderTransferOptions(accounts,pockets);
 
-        applyNumberFormatting('#value, #account-initial-balance, #pocket-initial-balance, #transfer-value, #initial-debt, #purchase-value, #purchase-monthly, #payment-value, #modal-pocket-amount, #edit-value, #adjust-balance-value');
+        applyNumberFormatting('#value, #account-initial-balance, #pocket-initial-balance, #transfer-value, #initial-debt, #purchase-value, #purchase-monthly, #payment-value, #modal-pocket-amount, #edit-value, #adjust-balance-value, #edit-item-balance');
 
         document.getElementById('modal-cancel-btn').addEventListener('click',closeConfirmationModal);
         document.getElementById('modal-confirm-btn').addEventListener('click',()=>{if(confirmCallback)confirmCallback();closeConfirmationModal();});

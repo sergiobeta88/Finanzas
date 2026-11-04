@@ -6,9 +6,10 @@
     <meta name="theme-color" content="#2c5282"/>
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <link rel="apple-touch-icon" href="">
+    <link rel="icon" type="image/svg+xml" id="app-favicon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%232b6cb0'/%3E%3Cstop offset='1' stop-color='%231a365d'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='14' fill='url%28%23g%29'/%3E%3Crect x='8' y='38' width='9' height='16' rx='2' fill='%239ae6b4'/%3E%3Crect x='20' y='30' width='9' height='24' rx='2' fill='%2368d391'/%3E%3Crect x='32' y='22' width='9' height='32' rx='2' fill='%2348bb78'/%3E%3Ccircle cx='45' cy='20' r='13' fill='%23f6c744' stroke='%23b7791f' stroke-width='2.5'/%3E%3Ctext x='45' y='21' text-anchor='middle' dominant-baseline='central' font-family='Arial%2CHelvetica%2Csans-serif' font-weight='700' font-size='17' fill='%23744210'%3E%24%3C/text%3E%3C/svg%3E">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%232b6cb0'/%3E%3Cstop offset='1' stop-color='%231a365d'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='14' fill='url%28%23g%29'/%3E%3Crect x='8' y='38' width='9' height='16' rx='2' fill='%239ae6b4'/%3E%3Crect x='20' y='30' width='9' height='24' rx='2' fill='%2368d391'/%3E%3Crect x='32' y='22' width='9' height='32' rx='2' fill='%2348bb78'/%3E%3Ccircle cx='45' cy='20' r='13' fill='%23f6c744' stroke='%23b7791f' stroke-width='2.5'/%3E%3Ctext x='45' y='21' text-anchor='middle' dominant-baseline='central' font-family='Arial%2CHelvetica%2Csans-serif' font-weight='700' font-size='17' fill='%23744210'%3E%24%3C/text%3E%3C/svg%3E">
     <link rel="manifest" id="manifest-placeholder">
-    <title>Gestión de Finanzas Personales V3.0</title>
+    <title>Gestión de Finanzas Personales V3.1</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -164,7 +165,7 @@
 
     <div class="max-w-4xl mx-auto p-4 md:p-8">
         <header class="bg-white rounded-lg shadow-xl p-4 sticky top-4 z-50">
-            <h1 class="text-3xl md:text-4xl font-extrabold text-center text-blue-800">Finanzas Personales V3.0</h1>
+            <h1 class="text-3xl md:text-4xl font-extrabold text-center text-blue-800">Finanzas Personales V3.1</h1>
             <nav id="nav-links" class="flex justify-around items-center mt-4 p-2 bg-gray-800 rounded-lg shadow-inner">
                 <button onclick="showSection('dashboard')"     data-section="dashboard"     class="flex-1 text-center py-2 px-1 text-xs md:text-base font-semibold text-gray-400 hover:text-white hover:bg-gray-700 transition rounded-lg bg-gray-700">Dashboard</button>
                 <button onclick="showSection('register')"      data-section="register"      class="flex-1 text-center py-2 px-1 text-xs md:text-base font-semibold text-gray-400 hover:text-white hover:bg-gray-700 transition rounded-lg">Registro</button>
@@ -194,7 +195,7 @@
                 <div class="bg-white p-6 rounded-lg shadow-xl"><h2 class="text-2xl font-bold text-gray-700 mb-4">Comparativa de Fondos</h2><canvas id="balanceChart" width="400" height="200"></canvas></div>
                 <div class="bg-white p-6 rounded-lg shadow-xl"><h2 class="text-2xl font-bold text-gray-700 mb-4">Saldos de Cuentas</h2><div id="all-accounts-list"></div></div>
                 <div class="bg-white p-6 rounded-lg shadow-xl"><h2 class="text-2xl font-bold text-gray-700 mb-4">Saldos de Bolsillos de Ahorro</h2><div id="savings-pockets-list"></div></div>
-                <div class="bg-white p-6 rounded-lg shadow-xl"><h2 class="text-2xl font-bold text-gray-700 mb-4">Saldos de Bolsillos de Pagos</h2><div id="payments-pockets-list"></div></div>
+                <div class="bg-white p-6 rounded-lg shadow-xl"><div class="flex flex-wrap justify-between items-center gap-2 mb-1"><h2 class="text-2xl font-bold text-gray-700">Saldos de Bolsillos de Pagos</h2><button type="button" onclick="resetAllPocketPayments()" class="bg-gray-200 text-gray-700 px-3 py-1 rounded-full text-xs font-semibold hover:bg-gray-300 transition">↺ Desmarcar todos</button></div><p class="text-xs text-gray-500 mb-4">Los pagos marcados se conservan al cambiar de mes. Desmárcalos uno a uno o todos con el botón.</p><div id="payments-pockets-list"></div></div>
                 <div class="bg-white p-6 rounded-lg shadow-xl"><h2 class="text-2xl font-bold text-gray-700 mb-4">Saldos de Bolsillos de Gastos Personales</h2><div id="personal-expenses-pockets-list"></div></div>
                 <div class="bg-white p-6 rounded-lg shadow-xl">
                     <h2 class="text-2xl font-bold text-gray-700 mb-4">Saldos de Tarjetas de Crédito y Créditos Regulares</h2>
@@ -263,6 +264,7 @@
                     <div><label for="pocket-name" class="block text-gray-700 font-bold mb-2">Nombre</label><input type="text" id="pocket-name" name="name" required class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300"></div>
                     <div><label for="pocket-initial-balance" class="block text-gray-700 font-bold mb-2">Saldo Inicial ($)</label><input type="text" id="pocket-initial-balance" name="initial_balance" required class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300"></div>
                     <div><label for="pocket-type" class="block text-gray-700 font-bold mb-2">Tipo</label><select id="pocket-type" name="type" required class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300"><option value="ahorro">Bolsillo de Ahorro</option><option value="pagos">Bolsillo de Pagos</option><option value="gastos-personales">Bolsillo de Gastos Personales</option><option value="sobregiro">Bolsillo con Sobregiro</option></select></div>
+                    <div id="pocket-payment-day-wrapper" class="hidden"><label for="pocket-payment-day" class="block text-gray-700 font-bold mb-2">Día de pago del mes (1-31)</label><input type="number" id="pocket-payment-day" name="payment_day" min="1" max="31" step="1" placeholder="Ej: 15" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300"><p class="text-xs text-gray-500 mt-1">Si el mes tiene menos días, se toma el último día del mes.</p></div>
                     <button type="submit" class="w-full bg-blue-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-600 transition">Guardar Bolsillo</button>
                 </form>
                 <div id="pockets-list" class="space-y-2"></div>
@@ -384,7 +386,7 @@
     <div id="multi-pocket-modal" class="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center hidden z-50"><div class="bg-white p-6 rounded-lg shadow-xl w-full max-w-lg"><h3 class="text-xl font-bold text-gray-700 mb-2">Distribuir Gasto</h3><p class="mb-4">Valor total: <span id="modal-expense-total" class="font-bold"></span></p><div id="distribution-list" class="space-y-2 mb-4 max-h-48 overflow-y-auto"></div><div class="p-4 bg-gray-50 rounded-lg mb-4"><div class="flex flex-col md:flex-row gap-2 items-end"><div class="flex-grow"><label for="modal-pocket-select" class="block text-sm font-bold text-gray-700">Bolsillo</label><select id="modal-pocket-select" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300"></select></div><div class="flex-grow"><label for="modal-pocket-amount" class="block text-sm font-bold text-gray-700">Monto</label><input type="text" id="modal-pocket-amount" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300"></div><button type="button" id="modal-add-pocket-btn" class="bg-blue-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-600 transition">Añadir</button></div></div><div class="text-right font-bold mb-4"><p>Cubierto: <span id="modal-amount-covered" class="text-green-600">$0.00</span></p><p>Restante: <span id="modal-amount-remaining" class="text-red-500">$0.00</span></p></div><div class="flex justify-end space-x-4"><button id="modal-cancel-distribution-btn" type="button" class="bg-gray-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-gray-600 transition">Cancelar</button><button id="modal-confirm-distribution-btn" type="button" class="bg-green-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-green-600 transition disabled:opacity-50" disabled>Confirmar</button></div></div></div>
     <div id="pay-monthly-installment-modal" class="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center hidden z-50"><div class="bg-white p-6 rounded-lg shadow-xl w-full max-w-sm"><h3 class="text-xl font-bold text-gray-700 mb-4">Pagar Cuota Mensual</h3><div class="space-y-4"><div><label for="installment-pay-period" class="block text-gray-700 font-bold mb-2">Seleccionar Mes</label><select id="installment-pay-period" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300"></select></div><div class="text-right pt-4 space-x-4"><button onclick="closeMonthlyPayModal()" class="bg-gray-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-gray-600 transition">Cancelar</button><button id="monthly-installment-confirm-btn" class="bg-green-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-green-600 transition">Pagar Cuota</button></div></div></div></div>
     <div id="adjust-card-balance-modal" class="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center hidden z-50"><div class="bg-white p-6 rounded-lg shadow-xl w-full max-w-sm"><h3 class="text-xl font-bold text-gray-700 mb-4">Ajustar Saldo Manual</h3><div class="space-y-4"><div><label for="adjust-balance-value" class="block text-gray-700 font-bold mb-2">Nuevo Saldo ($)</label><input type="text" id="adjust-balance-value" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300"></div><div class="text-right pt-4 space-x-4"><button onclick="closeAdjustBalanceModal()" class="bg-gray-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-gray-600 transition">Cancelar</button><button id="adjust-balance-confirm-btn" class="bg-blue-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-600 transition">Actualizar Saldo</button></div></div></div></div>
-    <div id="edit-transaction-modal" class="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center hidden z-50"><div class="bg-white p-6 rounded-lg shadow-xl w-full max-w-lg"><h3 class="text-xl font-bold text-gray-700 mb-4">Editar Movimiento</h3><form id="edit-transaction-form" class="space-y-4"><input type="hidden" id="edit-tx-id"><input type="hidden" id="edit-tx-original-data"><div><label for="edit-concept" class="block text-gray-700 font-bold mb-2">Concepto</label><input type="text" id="edit-concept" required class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300"></div><div><label for="edit-date" class="block text-gray-700 font-bold mb-2">Día</label><input type="date" id="edit-date" required class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300"></div><div><label for="edit-value" class="block text-gray-700 font-bold mb-2">Valor ($)</label><input type="text" id="edit-value" required class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300"></div><div id="edit-income-expense-fields" class="hidden"><label class="block text-gray-700 font-bold mb-2">Tipo</label><p id="edit-type-label" class="font-semibold text-lg p-2 bg-gray-100 rounded"></p><div><label for="edit-afecta-cuenta" class="block text-gray-700 font-bold mb-2">Cuenta (opcional)</label><select id="edit-afecta-cuenta" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300"></select></div><div><label for="edit-afecta-bolsillo" class="block text-gray-700 font-bold mb-2">Bolsillo (opcional)</label><select id="edit-afecta-bolsillo" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300"></select></div></div><div id="edit-transfer-fields" class="hidden"><p class="font-semibold text-lg p-2 bg-gray-100 rounded">Transferencia</p><div><label class="block text-gray-700 font-bold mb-2">Origen</label><div class="flex space-x-2"><select id="edit-transfer-source-account" class="w-1/2 px-4 py-2 border rounded-lg"></select><select id="edit-transfer-source-pocket" class="w-1/2 px-4 py-2 border rounded-lg"></select></div></div><div><label class="block text-gray-700 font-bold mb-2">Destino</label><div class="flex space-x-2"><select id="edit-transfer-destination-account" class="w-1/2 px-4 py-2 border rounded-lg"></select><select id="edit-transfer-destination-pocket" class="w-1/2 px-4 py-2 border rounded-lg"></select></div></div></div><div id="edit-distributed-expense-fields" class="hidden"><p class="p-4 bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 rounded">Gasto Distribuido. Puede editar los campos comunes.</p></div><div class="flex justify-end space-x-4 mt-6"><button type="button" id="edit-modal-cancel-btn" class="bg-gray-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-gray-600 transition">Cancelar</button><button type="submit" id="edit-modal-save-btn" class="bg-blue-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-600 transition">Guardar Cambios</button></div></form></div></div>
+    <div id="edit-transaction-modal" class="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center hidden z-50"><div class="bg-white p-6 rounded-lg shadow-xl w-full max-w-lg"><h3 class="text-xl font-bold text-gray-700 mb-4">Editar Movimiento</h3><form id="edit-transaction-form" class="space-y-4"><input type="hidden" id="edit-tx-id"><input type="hidden" id="edit-tx-original-data"><div><label for="edit-concept" class="block text-gray-700 font-bold mb-2">Concepto</label><input type="text" id="edit-concept" required class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300"></div><div><label for="edit-date" class="block text-gray-700 font-bold mb-2">Día</label><input type="date" id="edit-date" required class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300"></div><div><label for="edit-value" class="block text-gray-700 font-bold mb-2">Valor ($)</label><input type="text" id="edit-value" required class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300"></div><div id="edit-income-expense-fields" class="hidden"><label class="block text-gray-700 font-bold mb-2">Tipo</label><p id="edit-type-label" class="font-semibold text-lg p-2 bg-gray-100 rounded"></p><div><label for="edit-afecta-cuenta" class="block text-gray-700 font-bold mb-2">Cuenta (opcional)</label><select id="edit-afecta-cuenta" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300"></select></div><div><label for="edit-afecta-bolsillo" class="block text-gray-700 font-bold mb-2">Bolsillo (opcional)</label><select id="edit-afecta-bolsillo" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300"></select></div></div><div id="edit-transfer-fields" class="hidden"><p class="font-semibold text-lg p-2 bg-gray-100 rounded">Transferencia</p><div><label class="block text-gray-700 font-bold mb-2">Origen</label><div class="flex space-x-2"><select id="edit-transfer-source-account" class="w-1/2 px-4 py-2 border rounded-lg"></select><select id="edit-transfer-source-pocket" class="w-1/2 px-4 py-2 border rounded-lg"></select></div></div><div><label class="block text-gray-700 font-bold mb-2">Destino</label><div class="flex space-x-2"><select id="edit-transfer-destination-account" class="w-1/2 px-4 py-2 border rounded-lg"></select><select id="edit-transfer-destination-pocket" class="w-1/2 px-4 py-2 border rounded-lg"></select></div></div></div><div id="edit-distributed-expense-fields" class="hidden space-y-3"><p class="p-3 bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 rounded text-sm">Gasto distribuido: puedes cambiar los bolsillos y sus montos. La suma no puede superar el valor del movimiento.</p><div id="edit-distribution-rows" class="space-y-2 max-h-56 overflow-y-auto"></div><button type="button" id="edit-add-distribution-row" class="w-full bg-blue-100 text-blue-700 px-3 py-2 rounded-lg font-semibold hover:bg-blue-200 transition text-sm">+ Añadir bolsillo</button><div class="text-right text-sm font-bold"><p>Cubierto: <span id="edit-dist-covered" class="text-green-600">$0</span></p><p>Restante: <span id="edit-dist-remaining" class="text-red-500">$0</span></p></div></div><div class="flex justify-end space-x-4 mt-6"><button type="button" id="edit-modal-cancel-btn" class="bg-gray-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-gray-600 transition">Cancelar</button><button type="submit" id="edit-modal-save-btn" class="bg-blue-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-600 transition">Guardar Cambios</button></div></form></div></div>
 
     <script>
     // ════════════════════════════════════════════════════════════════
@@ -405,6 +407,19 @@
     const formatNumber = (num) => {
         if (num === null || num === undefined) return '$0.00';
         return new Intl.NumberFormat('es-CO', { style:'currency', currency:'COP', minimumFractionDigits:2 }).format(num);
+    };
+    // ─── Regla: ningún bolsillo puede quedar en negativo ────────────
+    // Excepción: tipos listados aquí (por diseño). Para bloquear también los
+    // bolsillos tipo "sobregiro", deja el arreglo vacío: [].
+    const OVERDRAFT_ALLOWED_TYPES = ['sobregiro'];
+    const pocketAllowsOverdraft = (p) => !!p && OVERDRAFT_ALLOWED_TYPES.includes(p.type);
+    const assertNoPocketOverdraft = (before, after) => {
+        const bad = after.filter(p => {
+            if (!p || pocketAllowsOverdraft(p) || p.balance >= -0.005) return false;
+            const prev = before.find(b => b.id === p.id);
+            return p.balance < (prev ? prev.balance : 0) - 0.005; // solo bloquea si empeora el saldo
+        });
+        if (bad.length) throw new Error(`Saldo insuficiente: ${bad.map(p => `${p.name} quedaría en ${formatNumber(p.balance)}`).join('; ')}. No se permite sobregiro en bolsillos.`);
     };
     const parseFormattedNumber = (str) => {
         if (!str) return 0;
@@ -768,8 +783,38 @@ const makeSelectSearchable = (selectId) => {
     window.updateCheckedState=(txId,isChecked)=>{
         const c=getChecked(); isChecked?c[txId]=true:delete c[txId]; _set('checkedTransactions',c); syncToFirebase();
     };
-    window.updatePocketPaymentState=(key,isChecked)=>{
-        const c=getPktPayments(); isChecked?c[key]=true:delete c[key]; _set('pocketPaymentsChecked',c); syncToFirebase(); loadData();
+    // Checklist de pagos: la marca es por bolsillo (no por mes) y solo se borra manualmente.
+    const pktKey=(id)=>`pkt-${id}`;
+    const isLegacyPktKey=(k,id)=>/^\d{4}-\d{1,2}-/.test(k)&&k.endsWith('-'+id);
+    const getPocketPaidInfo=(id)=>{
+        const c=getPktPayments(); if(c[pktKey(id)])return c[pktKey(id)];
+        const n=new Date(); return c[`${n.getFullYear()}-${n.getMonth()}-${id}`]?true:null; // compatibilidad con marcas de la versión anterior
+    };
+    window.updatePocketPaymentState=(pocketId,isChecked)=>{
+        const c={...getPktPayments()};
+        Object.keys(c).forEach(k=>{if(isLegacyPktKey(k,pocketId))delete c[k];});
+        if(isChecked)c[pktKey(pocketId)]=new Date().toISOString(); else delete c[pktKey(pocketId)];
+        _set('pocketPaymentsChecked',c); syncToFirebase(); loadData();
+    };
+    window.resetAllPocketPayments=()=>{
+        if(Object.keys(getPktPayments()).length===0)return showMessage('No hay pagos marcados.','info');
+        showConfirmationModal('¿Desmarcar todos los pagos del checklist?',()=>{
+            saveState(); _set('pocketPaymentsChecked',{}); syncToFirebase(); loadData(); showMessage('Checklist de pagos reiniciado.');
+        });
+    };
+    const paymentDueHtml=(p,isPaid)=>{
+        const d=parseInt(p.paymentDay,10);
+        if(!d)return `<p class="text-xs text-gray-400">📅 Sin día de pago definido</p>`;
+        const now=new Date(), today=new Date(now.getFullYear(),now.getMonth(),now.getDate());
+        const lastDay=new Date(now.getFullYear(),now.getMonth()+1,0).getDate(), effDay=Math.min(d,lastDay);
+        const diff=Math.round((new Date(now.getFullYear(),now.getMonth(),effDay)-today)/86400000);
+        let rel='',cls='text-gray-600';
+        if(!isPaid){
+            if(diff>0){rel=` · faltan ${diff} día${diff===1?'':'s'}`;if(diff<=3)cls='text-orange-600 font-semibold';}
+            else if(diff===0){rel=' · ¡vence hoy!';cls='text-red-600 font-bold';}
+            else{rel=` · vencido hace ${-diff} día${diff===-1?'':'s'}`;cls='text-red-600 font-bold';}
+        }
+        return `<p class="text-xs ${cls}">📅 Día de pago: ${d}${d>lastDay?` (este mes: ${lastDay})`:''}${rel}</p>`;
     };
 
     const renderTransactions=(containerId,transactions,accounts,pockets,contextItem=null)=>{
@@ -831,7 +876,7 @@ const makeSelectSearchable = (selectId) => {
     const renderPockets=(pockets)=>{
         const c=document.getElementById('pockets-list'); c.innerHTML='';
         [...pockets].sort((a,b)=>({ahorro:1,pagos:2,'gastos-personales':3,sobregiro:4}[a.type]-{ahorro:1,pagos:2,'gastos-personales':3,sobregiro:4}[b.type])).forEach(p=>{
-            c.innerHTML+=`<div class="bg-gray-100 p-4 rounded-lg shadow-md flex justify-between items-center mb-2"><div><p class="font-bold">${p.name} <span class="text-xs font-normal text-gray-500">(${POCKET_TYPES[p.type]||p.type})</span></p><p class="text-sm text-gray-600">Saldo: ${formatNumber(p.balance)}</p></div><div class="flex space-x-2"><button onclick="showHistoryFor('pocket','${p.id}')" class="bg-blue-500 text-white px-3 py-1 rounded-full text-xs hover:bg-blue-600 transition">Historial</button><button onclick="editItem('${p.id}','pockets')" class="bg-yellow-500 text-white px-3 py-1 rounded-full text-xs hover:bg-yellow-600 transition">Editar</button><button onclick="deleteItem('${p.id}','pockets')" class="bg-red-500 text-white px-3 py-1 rounded-full text-xs hover:bg-red-600 transition">Eliminar</button></div></div>`;
+            c.innerHTML+=`<div class="bg-gray-100 p-4 rounded-lg shadow-md flex justify-between items-center mb-2"><div><p class="font-bold">${p.name} <span class="text-xs font-normal text-gray-500">(${POCKET_TYPES[p.type]||p.type})</span></p><p class="text-sm text-gray-600">Saldo: ${formatNumber(p.balance)}</p>${p.type==='pagos'?`<p class="text-xs text-gray-500">📅 Día de pago: ${p.paymentDay||'sin definir'}</p>`:''}</div><div class="flex space-x-2"><button onclick="showHistoryFor('pocket','${p.id}')" class="bg-blue-500 text-white px-3 py-1 rounded-full text-xs hover:bg-blue-600 transition">Historial</button><button onclick="editItem('${p.id}','pockets')" class="bg-yellow-500 text-white px-3 py-1 rounded-full text-xs hover:bg-yellow-600 transition">Editar</button><button onclick="deleteItem('${p.id}','pockets')" class="bg-red-500 text-white px-3 py-1 rounded-full text-xs hover:bg-red-600 transition">Eliminar</button></div></div>`;
         });
     };
 
@@ -850,17 +895,22 @@ const makeSelectSearchable = (selectId) => {
         sC.innerHTML=pC.innerHTML=eC.innerHTML='';
         const creditCards=getCreditCards(), curMY=`${new Date().getFullYear()}-${new Date().getMonth()}`;
         const renderItem=(p)=>{
-            let colorClass='text-gray-600',statusTag='',checkboxHtml='',itemClasses='';
+            let colorClass='text-gray-600',statusTag='',checkboxHtml='',itemClasses='',dueHtml='';
             if(p.type==='ahorro')colorClass='text-blue-500'; else if(p.type==='pagos')colorClass='text-red-500'; else if(p.type==='gastos-personales')colorClass='text-orange-500'; else if(p.type==='sobregiro')colorClass='text-yellow-600';
             let needed=0;
             if(p.type==='pagos')creditCards.forEach(card=>card.purchases.forEach(pur=>{if(pur.pocketId===p.id&&!isNewPurchase(pur.date)&&(pur.remainingBiWeekly>0||pur.isRecurring))needed+=pur.biWeeklyPayment;}));
             const insuff=needed>0&&p.balance<needed;
             if(needed>0)statusTag=`<p class="text-xs ${insuff?'text-red-600 font-bold':'text-gray-600'}">Cuota Quincenal: ${formatNumber(needed)}</p>`;
             if(insuff)itemClasses='border-l-4 border-red-500';
-            if(p.type==='pagos'){const key=`${curMY}-${p.id}`,isPaid=getPktPayments()[key]||false;checkboxHtml=`<div class="flex items-center space-x-2"><input type="checkbox" onchange="updatePocketPaymentState('${key}',this.checked)" ${isPaid?'checked':''} class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"><span class="text-xs text-gray-700">Pagado este mes</span></div>`;}
-            return `<div class="flex justify-between items-center py-2 border-b border-gray-200 last:border-b-0 ${itemClasses}"><div><p class="font-bold">${p.name}</p><p class="${colorClass} font-semibold">${formatNumber(p.balance)}</p>${statusTag}</div><div class="flex flex-col items-end space-y-1">${checkboxHtml}<button onclick="showHistoryFor('pocket','${p.id}')" class="bg-blue-500 text-white px-3 py-1 rounded-full text-xs hover:bg-blue-600 transition">Ver Historial</button></div></div>`;
+            if(p.type==='pagos'){
+                const paid=getPocketPaidInfo(p.id), isPaid=!!paid;
+                const lbl=isPaid?(typeof paid==='string'?`Pagado · ${new Date(paid).toLocaleDateString('es-CO',{day:'2-digit',month:'short'})}`:'Pagado'):'Pendiente';
+                checkboxHtml=`<label class="flex items-center space-x-2 cursor-pointer"><input type="checkbox" onchange="updatePocketPaymentState('${p.id}',this.checked)" ${isPaid?'checked':''} class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"><span class="text-xs ${isPaid?'text-green-700 font-semibold':'text-gray-700'}">${lbl}</span></label>`;
+                dueHtml=paymentDueHtml(p,isPaid);
+            }
+            return `<div class="flex justify-between items-center py-2 border-b border-gray-200 last:border-b-0 ${itemClasses}"><div><p class="font-bold">${p.name}</p><p class="${colorClass} font-semibold">${formatNumber(p.balance)}</p>${statusTag}${dueHtml}</div><div class="flex flex-col items-end space-y-1">${checkboxHtml}<button onclick="showHistoryFor('pocket','${p.id}')" class="bg-blue-500 text-white px-3 py-1 rounded-full text-xs hover:bg-blue-600 transition">Ver Historial</button></div></div>`;
         };
-        const sv=pockets.filter(p=>p.type==='ahorro'), pv=pockets.filter(p=>p.type==='pagos'), ev=pockets.filter(p=>p.type==='gastos-personales');
+        const sv=pockets.filter(p=>p.type==='ahorro'), pv=pockets.filter(p=>p.type==='pagos').sort((a,b)=>(parseInt(a.paymentDay,10)||99)-(parseInt(b.paymentDay,10)||99)), ev=pockets.filter(p=>p.type==='gastos-personales');
         sC.innerHTML=sv.length===0?`<p class="text-sm text-gray-500">No hay bolsillos de ahorro.</p>`:sv.map(renderItem).join('');
         pC.innerHTML=pv.length===0?`<p class="text-sm text-gray-500">No hay bolsillos de pagos.</p>`:pv.map(renderItem).join('');
         eC.innerHTML=ev.length===0?`<p class="text-sm text-gray-500">No hay bolsillos de gastos personales.</p>`:ev.map(renderItem).join('');
@@ -970,12 +1020,23 @@ const makeSelectSearchable = (selectId) => {
         _set('accounts',accounts); syncToFirebase(); loadData(); form.reset();
     });
 
+    const togglePocketPaymentDay=()=>{
+        const isPagos=document.getElementById('pocket-type').value==='pagos', w=document.getElementById('pocket-payment-day-wrapper'), i=document.getElementById('pocket-payment-day');
+        w.classList.toggle('hidden',!isPagos); i.required=isPagos;
+    };
+    document.getElementById('pocket-type').addEventListener('change',togglePocketPaymentDay);
+    document.getElementById('pocket-form').addEventListener('reset',()=>setTimeout(togglePocketPaymentDay,0));
+
     document.getElementById('pocket-form').addEventListener('submit',(e)=>{
-        e.preventDefault(); saveState();
+        e.preventDefault();
+        const _pdRaw=e.target.payment_day.value.trim(), _pdNum=parseInt(_pdRaw,10), _isPagos=e.target.type.value==='pagos';
+        if(_isPagos&&(isNaN(_pdNum)||_pdNum<1||_pdNum>31))return showMessage('Indica el día de pago (1 a 31) del bolsillo de pagos.','error');
+        const paymentDay=_isPagos?_pdNum:null;
+        saveState();
         const form=e.target, name=form.name.value, bal=parseFormattedNumber(form.initial_balance.value), type=form.type.value, editId=form.dataset.editingId;
         let pockets=getPockets();
-        if(editId){const idx=pockets.findIndex(p=>p.id===editId);if(idx!==-1){pockets[idx].name=name;pockets[idx].balance=bal;pockets[idx].type=type;showMessage('Bolsillo actualizado.');delete form.dataset.editingId;}}
-        else{pockets.push({id:crypto.randomUUID(),name,balance:bal,type,biweeklyPaymentHistory:{},installmentTransferHistory:{},createdAt:new Date().toISOString()});showMessage('Bolsillo creado.');}
+        if(editId){const idx=pockets.findIndex(p=>p.id===editId);if(idx!==-1){pockets[idx].name=name;pockets[idx].balance=bal;pockets[idx].type=type;if(paymentDay)pockets[idx].paymentDay=paymentDay;else delete pockets[idx].paymentDay;showMessage('Bolsillo actualizado.');delete form.dataset.editingId;}}
+        else{pockets.push({id:crypto.randomUUID(),name,balance:bal,type,paymentDay,biweeklyPaymentHistory:{},installmentTransferHistory:{},createdAt:new Date().toISOString()});showMessage('Bolsillo creado.');}
         _set('pockets',pockets); syncToFirebase(); loadData(); form.reset();
     });
 
@@ -1202,7 +1263,9 @@ const makeSelectSearchable = (selectId) => {
             saveState();
             let txs=getTransactions(), accounts=getAccounts(), pockets=getPockets();
             const idx=txs.findIndex(t=>t.id===txId); if(idx===-1)return showMessage('Transacción no encontrada.','error');
-            revertTransaction(txs[idx],accounts,pockets); txs.splice(idx,1);
+            revertTransaction(txs[idx],accounts,pockets);
+            try{assertNoPocketOverdraft(getPockets(),pockets);}catch(err){return showMessage(err.message,'error');}
+            txs.splice(idx,1);
             const c=getChecked(); delete c[txId]; _set('checkedTransactions',c);
             _set('accounts',accounts); _set('pockets',pockets); _set('transactions',txs);
             syncToFirebase(); loadData(); showSection(previousSection); showMessage('Transacción eliminada.','success');
@@ -1219,7 +1282,7 @@ const makeSelectSearchable = (selectId) => {
     window.editItem=(itemId,colName)=>{
         let items=(colName==='credit_cards'?getCreditCards():(colName==='accounts'?getAccounts():getPockets())).filter(i=>i&&i.id);
         const item=items.find(i=>i.id===itemId);
-        if(item){const formId=colName==='credit_cards'?'create-card-form':`${colName.replace('_cards','').slice(0,-1)}-form`;const form=document.getElementById(formId);if(!form)return;form.dataset.editingId=itemId;if(form.name)form.name.value=item.name;if(form.initial_balance)form.initial_balance.value=(item.balance||0).toLocaleString('es-CO');if(form.type)form.type.value=item.type;showSection(colName==='credit_cards'?'credit-cards':colName);}
+        if(item){const formId=colName==='credit_cards'?'create-card-form':`${colName.replace('_cards','').slice(0,-1)}-form`;const form=document.getElementById(formId);if(!form)return;form.dataset.editingId=itemId;if(form.name)form.name.value=item.name;if(form.initial_balance)form.initial_balance.value=(item.balance||0).toLocaleString('es-CO');if(form.type)form.type.value=item.type;if(colName==='pockets'){document.getElementById('pocket-payment-day').value=item.paymentDay||'';togglePocketPaymentDay();}showSection(colName==='credit_cards'?'credit-cards':colName);}
         else showMessage('Elemento no encontrado.','error');
     };
 
@@ -1318,7 +1381,7 @@ const makeSelectSearchable = (selectId) => {
         form.querySelector('#edit-concept').value=tx.concept; form.querySelector('#edit-date').value=tx.date; form.querySelector('#edit-value').value=tx.value.toLocaleString('es-CO');
         ['edit-income-expense-fields','edit-transfer-fields','edit-distributed-expense-fields'].forEach(id=>document.getElementById(id).classList.add('hidden'));
         document.getElementById('edit-modal-save-btn').disabled=false;
-        if(Array.isArray(tx.distribution)&&tx.distribution.length>0)document.getElementById('edit-distributed-expense-fields').classList.remove('hidden');
+        if(Array.isArray(tx.distribution)&&tx.distribution.length>0){document.getElementById('edit-distributed-expense-fields').classList.remove('hidden');setupEditDistribution(tx);}
         else if(tx.type==='transfer'){
             document.getElementById('edit-transfer-fields').classList.remove('hidden');
             const sa=document.getElementById('edit-transfer-source-account'), sp=document.getElementById('edit-transfer-source-pocket'), da=document.getElementById('edit-transfer-destination-account'), dp=document.getElementById('edit-transfer-destination-pocket');
@@ -1341,11 +1404,53 @@ const makeSelectSearchable = (selectId) => {
 
     document.getElementById('edit-modal-cancel-btn').addEventListener('click',()=>document.getElementById('edit-transaction-modal').classList.add('hidden'));
 
+    // ── Edición de distribución entre bolsillos ──────────────────────
+    let editDistPockets=[];
+    const updateEditDistSummary=()=>{
+        const total=parseFormattedNumber(document.getElementById('edit-value').value);
+        let covered=0; document.querySelectorAll('#edit-distribution-rows .edit-dist-amount').forEach(i=>covered+=parseFormattedNumber(i.value));
+        document.getElementById('edit-dist-covered').textContent=formatNumber(covered);
+        document.getElementById('edit-dist-remaining').textContent=covered>total?'¡Exceso!':formatNumber(total-covered);
+    };
+    const buildEditDistRow=(pocketId='',value='')=>{
+        const row=document.createElement('div'); row.className='flex gap-2 items-center edit-dist-row';
+        const opts=editDistPockets.map(p=>`<option value="${p.id}" ${p.id===pocketId?'selected':''}>${p.name} (disp. ${formatNumber(p.balance)})</option>`).join('');
+        row.innerHTML=`<select class="edit-dist-pocket flex-grow min-w-0 px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"><option value="">Seleccione bolsillo…</option>${opts}</select><input type="text" class="edit-dist-amount w-32 px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-300" placeholder="Monto" value="${value?Number(value).toLocaleString('es-CO'):''}"><button type="button" class="edit-dist-remove text-red-500 font-bold px-2" title="Quitar">✕</button>`;
+        row.querySelector('.edit-dist-remove').addEventListener('click',()=>{row.remove();updateEditDistSummary();});
+        row.querySelector('.edit-dist-amount').addEventListener('input',updateEditDistSummary);
+        document.getElementById('edit-distribution-rows').appendChild(row);
+        applyNumberFormatting('.edit-dist-amount');
+    };
+    const setupEditDistribution=(tx)=>{
+        // Saldos disponibles = saldos actuales con el movimiento original revertido
+        const accC=getAccounts(), pC=getPockets(); revertTransaction(tx,accC,pC);
+        editDistPockets=pC.filter(p=>p&&p.name);
+        document.getElementById('edit-distribution-rows').innerHTML='';
+        tx.distribution.forEach(d=>buildEditDistRow(d.pocketId,d.value));
+        updateEditDistSummary();
+    };
+    const readEditDistribution=()=>{
+        const rows=[...document.querySelectorAll('#edit-distribution-rows .edit-dist-row')], seen=new Set(), dist=[];
+        if(rows.length===0)throw new Error('La distribución debe tener al menos un bolsillo.');
+        rows.forEach(r=>{
+            const pid=r.querySelector('.edit-dist-pocket').value, val=parseFormattedNumber(r.querySelector('.edit-dist-amount').value);
+            if(!pid)throw new Error('Selecciona el bolsillo en todas las filas de la distribución.');
+            if(!(val>0))throw new Error('Cada bolsillo de la distribución debe tener un monto mayor a cero.');
+            if(seen.has(pid))throw new Error('Un bolsillo está repetido en la distribución.');
+            seen.add(pid); const p=editDistPockets.find(p=>p.id===pid); dist.push({pocketId:pid,value:val,name:p?p.name:''});
+        });
+        return dist;
+    };
+    document.getElementById('edit-add-distribution-row').addEventListener('click',()=>buildEditDistRow());
+    document.getElementById('edit-value').addEventListener('input',updateEditDistSummary);
+
     document.getElementById('edit-transaction-form').addEventListener('submit',(e)=>{
         e.preventDefault();
         const form=e.target, txId=form.querySelector('#edit-tx-id').value, originalTx=JSON.parse(form.querySelector('#edit-tx-original-data').value);
         saveState();
         let accounts=getAccounts(), pockets=getPockets(), txs=getTransactions();
+        const pocketsBeforeEdit=getPockets();
+        const isDistTx=Array.isArray(originalTx.distribution)&&originalTx.distribution.length>0;
         revertTransaction(originalTx,accounts,pockets);
         let updatedTx={...originalTx};
         try{
@@ -1365,7 +1470,12 @@ const makeSelectSearchable = (selectId) => {
             } else {
                 const naId=form.querySelector('#edit-afecta-cuenta')?.value||originalTx.accountId||null;
                 const npId=form.querySelector('#edit-afecta-bolsillo')?.value||originalTx.pocketId||null;
-                if(!originalTx.distribution){
+                if(isDistTx){
+                    const dist=readEditDistribution();
+                    const sum=dist.reduce((a,d)=>a+d.value,0);
+                    if(sum>nv+0.005)throw new Error('La suma de la distribución supera el valor del movimiento.');
+                    updatedTx.distribution=dist;
+                } else {
                     if(!naId&&!npId)throw new Error('Debe seleccionar al menos una cuenta o un bolsillo.');
                     if(originalTx.type==='expense'){if(naId){const a=accounts.find(a=>a.id===naId);if(a.balance<nv)throw new Error('Saldo insuficiente en la cuenta.');}if(npId){const p=pockets.find(p=>p.id===npId);if(p.balance<nv&&p.type!=='sobregiro')throw new Error('Saldo insuficiente en el bolsillo.');}}
                     updatedTx.accountId=naId; updatedTx.pocketId=npId;
@@ -1373,6 +1483,7 @@ const makeSelectSearchable = (selectId) => {
                 updatedTx={...updatedTx,concept:nc,date:nd,value:nv};
             }
             applyTransaction(updatedTx,accounts,pockets);
+            assertNoPocketOverdraft(pocketsBeforeEdit,pockets);
             if(updatedTx.type==='transfer'){updatedTx.finalSourceBalance=(updatedTx.sourceType==='account'?accounts.find(i=>i.id===updatedTx.sourceId):pockets.find(i=>i.id===updatedTx.sourceId))?.balance||null;updatedTx.finalDestinationBalance=(updatedTx.destinationType==='account'?accounts.find(i=>i.id===updatedTx.destinationId):pockets.find(i=>i.id===updatedTx.destinationId))?.balance||null;}
             else{updatedTx.finalAccountBalance=accounts.find(a=>a.id===updatedTx.accountId)?.balance||null;updatedTx.finalPocketBalance=pockets.find(p=>p.id===updatedTx.pocketId)?.balance||null;}
             const idx=txs.findIndex(t=>t.id===txId); if(idx===-1)throw new Error('No se pudo encontrar la transacción.');
@@ -1395,6 +1506,8 @@ const makeSelectSearchable = (selectId) => {
         const form=e.target, concept=form.concept.value, date=form.date.value, type=form.type.value, value=parseFormattedNumber(form.value.value), accountId=form['afecta-cuenta'].value, pocketId=form['afecta-bolsillo'].value, mpd=form['multi-pocket-data'].value;
         if(isNaN(value)||value<=0)return showMessage('El valor debe ser un número positivo.','error');
         if(!accountId&&!pocketId&&!mpd)return showMessage('Seleccione una cuenta o bolsillo.','error');
+        { const simP=getPockets(); applyTransaction({type,value,accountId:null,pocketId:mpd?null:(pocketId||null),distribution:mpd?JSON.parse(mpd):null},getAccounts(),simP);
+          try{assertNoPocketOverdraft(getPockets(),simP);}catch(err){return showMessage(err.message,'error');} }
         saveState();
         let accounts=getAccounts(), pockets=getPockets(), txs=getTransactions();
         const newTx={id:crypto.randomUUID(),concept,date,type,value,accountId:accountId||null,pocketId:mpd?null:(pocketId||null),distribution:mpd?JSON.parse(mpd):null,createdAt:new Date().toISOString()};
@@ -1417,11 +1530,11 @@ const makeSelectSearchable = (selectId) => {
     window.onload = async () => {
         // PWA
         try {
-            const svgIcon=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="20" fill="#2c5282"/><text x="50%" y="50%" dominant-baseline="central" text-anchor="middle" font-size="60" fill="white" font-family="Arial, sans-serif">$</text></svg>`;
-            const iconUrl=`data:image/svg+xml;base64,${btoa(svgIcon)}`;
+            // Ícono único de la app (definido en <head> como favicon)
+            const iconUrl=document.getElementById('app-favicon').href;
             const manifest={name:"Finanzas Personales",short_name:"Finanzas",start_url:".",display:"standalone",background_color:"#f7fafc",theme_color:"#2c5282",icons:[{src:iconUrl,sizes:"192x192",type:"image/svg+xml",purpose:"any"},{src:iconUrl,sizes:"512x512",type:"image/svg+xml",purpose:"any maskable"}]};
             document.getElementById('manifest-placeholder').href=URL.createObjectURL(new Blob([JSON.stringify(manifest)],{type:'application/json'}));
-            document.querySelector('link[rel="apple-touch-icon"]').href=iconUrl;
+            
             if('serviceWorker' in navigator){const swCode=`const CACHE_NAME='finanzas-v4';self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE_NAME).then(c=>c.addAll(['./']))));self.addEventListener('fetch',e=>e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request))));`;navigator.serviceWorker.register(URL.createObjectURL(new Blob([swCode],{type:'application/javascript'}))).catch(console.error);}
         } catch(err){console.error("PWA error:",err);}
 

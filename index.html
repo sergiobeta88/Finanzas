@@ -9,7 +9,7 @@
     <link rel="icon" type="image/svg+xml" id="app-favicon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%232b6cb0'/%3E%3Cstop offset='1' stop-color='%231a365d'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='14' fill='url%28%23g%29'/%3E%3Crect x='8' y='38' width='9' height='16' rx='2' fill='%239ae6b4'/%3E%3Crect x='20' y='30' width='9' height='24' rx='2' fill='%2368d391'/%3E%3Crect x='32' y='22' width='9' height='32' rx='2' fill='%2348bb78'/%3E%3Ccircle cx='45' cy='20' r='13' fill='%23f6c744' stroke='%23b7791f' stroke-width='2.5'/%3E%3Ctext x='45' y='21' text-anchor='middle' dominant-baseline='central' font-family='Arial%2CHelvetica%2Csans-serif' font-weight='700' font-size='17' fill='%23744210'%3E%24%3C/text%3E%3C/svg%3E">
     <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%232b6cb0'/%3E%3Cstop offset='1' stop-color='%231a365d'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='14' fill='url%28%23g%29'/%3E%3Crect x='8' y='38' width='9' height='16' rx='2' fill='%239ae6b4'/%3E%3Crect x='20' y='30' width='9' height='24' rx='2' fill='%2368d391'/%3E%3Crect x='32' y='22' width='9' height='32' rx='2' fill='%2348bb78'/%3E%3Ccircle cx='45' cy='20' r='13' fill='%23f6c744' stroke='%23b7791f' stroke-width='2.5'/%3E%3Ctext x='45' y='21' text-anchor='middle' dominant-baseline='central' font-family='Arial%2CHelvetica%2Csans-serif' font-weight='700' font-size='17' fill='%23744210'%3E%24%3C/text%3E%3C/svg%3E">
     <link rel="manifest" id="manifest-placeholder">
-    <title>Gestión de Finanzas Personales V3.9</title>
+    <title>Gestión de Finanzas Personales V4.0</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -47,6 +47,7 @@
             saved_budgets:         [],
             checkedTransactions:   {},
             pocketPaymentsChecked: {},
+            quick_captures:        [],
             lastModified:          null
         };
 
@@ -80,6 +81,7 @@
                     window._appState.saved_budgets         = data.saved_budgets         || [];
                     window._appState.checkedTransactions   = data.checkedTransactions   || {};
                     window._appState.pocketPaymentsChecked = data.pocketPaymentsChecked || {};
+                    window._appState.quick_captures        = data.quick_captures        || [];
                     window._appState.lastModified          = data.lastModified          || null;
                     console.log("☁️ Datos cargados desde Firebase.");
                     return true;
@@ -129,6 +131,7 @@
                     window._appState.saved_budgets         = data.saved_budgets         || [];
                     window._appState.checkedTransactions   = data.checkedTransactions   || {};
                     window._appState.pocketPaymentsChecked = data.pocketPaymentsChecked || {};
+                    window._appState.quick_captures        = data.quick_captures        || [];
                     window._appState.lastModified          = remoteLM;
                     console.log("🔄 Sincronización en tiempo real.");
                     if (window.resetUndoHistory) window.resetUndoHistory();
@@ -166,7 +169,7 @@
 
     <div class="max-w-4xl mx-auto p-4 md:p-8">
         <header class="bg-white rounded-lg shadow-xl p-4 sticky top-4 z-50">
-            <h1 class="text-xl min-[400px]:text-2xl md:text-4xl font-extrabold text-center text-blue-800">Finanzas Personales V3.9</h1>
+            <h1 class="text-xl min-[400px]:text-2xl md:text-4xl font-extrabold text-center text-blue-800">Finanzas Personales V4.0</h1>
             <nav id="nav-links" class="grid grid-cols-4 gap-1.5 md:gap-2 mt-3 md:mt-4 p-1.5 md:p-2 bg-gray-800 rounded-xl shadow-inner">
                 <button onclick="showSection('dashboard')" data-section="dashboard" class="flex flex-col items-center justify-center gap-1 min-w-0 min-h-[4.25rem] md:min-h-[5rem] py-2 px-0.5 font-semibold text-gray-300 hover:text-white hover:bg-gray-700 active:bg-gray-600 transition rounded-lg bg-gray-700 text-white ring-2 ring-blue-400"><span class="text-2xl md:text-3xl leading-none" aria-hidden="true">📊</span><span class="text-[12px] min-[400px]:text-[13px] sm:text-sm md:text-base leading-tight tracking-tight sm:tracking-normal text-center w-full whitespace-nowrap"><span class="sm:hidden">Inicio</span><span class="hidden sm:inline">Dashboard</span></span></button>
                 <button onclick="showSection('register')" data-section="register" class="flex flex-col items-center justify-center gap-1 min-w-0 min-h-[4.25rem] md:min-h-[5rem] py-2 px-0.5 font-semibold text-gray-300 hover:text-white hover:bg-gray-700 active:bg-gray-600 transition rounded-lg"><span class="text-2xl md:text-3xl leading-none" aria-hidden="true">✍️</span><span class="text-[12px] min-[400px]:text-[13px] sm:text-sm md:text-base leading-tight tracking-tight sm:tracking-normal text-center w-full whitespace-nowrap"><span class="sm:hidden">Registro</span><span class="hidden sm:inline">Registro</span></span></button>
@@ -174,8 +177,8 @@
                 <button onclick="showSection('pockets')" data-section="pockets" class="flex flex-col items-center justify-center gap-1 min-w-0 min-h-[4.25rem] md:min-h-[5rem] py-2 px-0.5 font-semibold text-gray-300 hover:text-white hover:bg-gray-700 active:bg-gray-600 transition rounded-lg"><span class="text-2xl md:text-3xl leading-none" aria-hidden="true">👛</span><span class="text-[12px] min-[400px]:text-[13px] sm:text-sm md:text-base leading-tight tracking-tight sm:tracking-normal text-center w-full whitespace-nowrap"><span class="sm:hidden">Bolsillos</span><span class="hidden sm:inline">Bolsillos</span></span></button>
                 <button onclick="showSection('transfers')" data-section="transfers" class="flex flex-col items-center justify-center gap-1 min-w-0 min-h-[4.25rem] md:min-h-[5rem] py-2 px-0.5 font-semibold text-gray-300 hover:text-white hover:bg-gray-700 active:bg-gray-600 transition rounded-lg"><span class="text-2xl md:text-3xl leading-none" aria-hidden="true">🔁</span><span class="text-[12px] min-[400px]:text-[13px] sm:text-sm md:text-base leading-tight tracking-tight sm:tracking-normal text-center w-full whitespace-nowrap"><span class="sm:hidden">Transferir</span><span class="hidden sm:inline">Transferencias</span></span></button>
                 <button onclick="showSection('credit-cards')" data-section="credit-cards" class="flex flex-col items-center justify-center gap-1 min-w-0 min-h-[4.25rem] md:min-h-[5rem] py-2 px-0.5 font-semibold text-gray-300 hover:text-white hover:bg-gray-700 active:bg-gray-600 transition rounded-lg"><span class="text-2xl md:text-3xl leading-none" aria-hidden="true">💳</span><span class="text-[12px] min-[400px]:text-[13px] sm:text-sm md:text-base leading-tight tracking-tight sm:tracking-normal text-center w-full whitespace-nowrap"><span class="sm:hidden">Tarjetas</span><span class="hidden sm:inline">Tarjetas</span></span></button>
-                <button onclick="showSection('automation')" data-section="automation" class="flex flex-col items-center justify-center gap-1 min-w-0 min-h-[4.25rem] md:min-h-[5rem] py-2 px-0.5 font-semibold text-gray-300 hover:text-white hover:bg-gray-700 active:bg-gray-600 transition rounded-lg"><span class="text-2xl md:text-3xl leading-none" aria-hidden="true">⚙️</span><span class="text-[12px] min-[400px]:text-[13px] sm:text-sm md:text-base leading-tight tracking-tight sm:tracking-normal text-center w-full whitespace-nowrap"><span class="sm:hidden">Automatizar</span><span class="hidden sm:inline">Automatización</span></span></button>
-                <button onclick="showSection('help')" data-section="help" class="flex flex-col items-center justify-center gap-1 min-w-0 min-h-[4.25rem] md:min-h-[5rem] py-2 px-0.5 font-semibold text-gray-300 hover:text-white hover:bg-gray-700 active:bg-gray-600 transition rounded-lg"><span class="text-2xl md:text-3xl leading-none" aria-hidden="true">❓</span><span class="text-[12px] min-[400px]:text-[13px] sm:text-sm md:text-base leading-tight tracking-tight sm:tracking-normal text-center w-full whitespace-nowrap"><span class="sm:hidden">Ayuda</span><span class="hidden sm:inline">Ayuda</span></span></button>
+                <button onclick="showSection('automation')" data-section="automation" class="flex flex-col items-center justify-center gap-1 min-w-0 min-h-[4.25rem] md:min-h-[5rem] py-2 px-0.5 font-semibold text-gray-300 hover:text-white hover:bg-gray-700 active:bg-gray-600 transition rounded-lg"><span class="text-2xl md:text-3xl leading-none" aria-hidden="true">📋</span><span class="text-[12px] min-[400px]:text-[13px] sm:text-sm md:text-base leading-tight tracking-tight sm:tracking-normal text-center w-full whitespace-nowrap"><span class="sm:hidden">Presupuesto</span><span class="hidden sm:inline">Presupuesto</span></span></button>
+                <button onclick="showSection('quick-capture')" data-section="quick-capture" class="relative flex flex-col items-center justify-center gap-1 min-w-0 min-h-[4.25rem] md:min-h-[5rem] py-2 px-0.5 font-semibold text-gray-300 hover:text-white hover:bg-gray-700 active:bg-gray-600 transition rounded-lg"><span class="text-2xl md:text-3xl leading-none" aria-hidden="true">⚡</span><span class="text-[12px] min-[400px]:text-[13px] sm:text-sm md:text-base leading-tight tracking-tight sm:tracking-normal text-center w-full whitespace-nowrap"><span class="sm:hidden">Captura</span><span class="hidden sm:inline">Captura rápida</span></span><span id="qc-badge" class="hidden absolute top-1 right-1 min-w-[1.25rem] h-5 px-1 rounded-full bg-red-500 text-white text-[11px] font-bold leading-5 text-center"></span></button>
             </nav>
         </header>
 
@@ -215,7 +218,7 @@
             <!-- REGISTRO -->
             <section id="register" class="hidden bg-white p-6 rounded-lg shadow-xl">
                 <div class="flex flex-wrap justify-between items-center gap-3 mb-4"><h2 class="text-2xl font-bold text-gray-700">Movimientos ✍️</h2><button type="button" onclick="openRegisterModal()" class="w-full sm:w-auto bg-blue-500 text-white px-5 py-3 rounded-lg font-semibold hover:bg-blue-600 transition shadow">+ Registrar nueva transacción</button></div>
-                <div id="register-modal" class="fixed inset-0 bg-gray-800 bg-opacity-50 hidden z-50 overflow-y-auto"><div class="min-h-full flex items-start md:items-center justify-center p-3 md:p-4"><div class="bg-white p-5 md:p-6 rounded-lg shadow-xl w-full max-w-2xl"><div class="flex justify-between items-center mb-4"><h3 class="text-xl font-bold text-gray-700">Registrar nueva transacción</h3><button type="button" onclick="closeRegisterModal()" class="text-gray-400 hover:text-gray-700 text-2xl leading-none px-2" title="Cerrar">✕</button></div>
+                <div id="register-modal" class="fixed inset-0 bg-gray-800 bg-opacity-50 hidden z-50 overflow-y-auto"><div class="min-h-full flex items-start md:items-center justify-center p-3 md:p-4"><div class="bg-white p-5 md:p-6 rounded-lg shadow-xl w-full max-w-2xl"><div id="capture-banner-register" class="hidden mb-3 p-3 rounded-lg bg-amber-50 border border-amber-200 text-sm text-amber-800"></div><div class="flex justify-between items-center mb-4"><h3 class="text-xl font-bold text-gray-700">Registrar nueva transacción</h3><button type="button" onclick="closeRegisterModal()" class="text-gray-400 hover:text-gray-700 text-2xl leading-none px-2" title="Cerrar">✕</button></div>
                 <form id="register-form" class="space-y-4">
                     <div class="flex flex-col md:flex-row md:space-x-4 space-y-4 md:space-y-0">
                         <div class="flex-1"><label for="concept" class="block text-gray-700 font-bold mb-2">Concepto</label><input type="text" id="concept" name="concept" required class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300"></div>
@@ -267,6 +270,7 @@
             <!-- TRANSFERENCIAS -->
             <section id="transfers" class="hidden bg-white p-6 rounded-lg shadow-xl">
                 <h2 class="text-2xl font-bold text-gray-700 mb-4">Transferencias 💸</h2>
+                <div id="capture-banner-transfer" class="hidden mb-3 p-3 rounded-lg bg-amber-50 border border-amber-200 text-sm text-amber-800"></div>
                 <form id="transfer-form" class="space-y-4 p-4 bg-gray-50 rounded-lg">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div><label for="transfer-concept" class="block text-gray-700 font-bold mb-2">Concepto</label><input type="text" id="transfer-concept" name="concept" required class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300"></div>
@@ -342,7 +346,7 @@
 
             <!-- AUTOMATIZACIÓN -->
             <section id="automation" class="hidden bg-white p-6 rounded-lg shadow-xl">
-                <h2 class="text-2xl font-bold text-gray-700 mb-4">Automatización de Ahorros 🤖</h2>
+                <h2 class="text-2xl font-bold text-gray-700 mb-4">Presupuesto 📋</h2>
                 <div class="bg-gray-100 p-4 rounded-lg shadow mb-6">
                     <h3 class="text-xl font-bold text-gray-700 mb-2">Gestionar Presupuestos Guardados</h3>
                     <div class="flex items-center space-x-2"><input type="text" id="new-budget-name" placeholder="Nombre del nuevo presupuesto" class="flex-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300"><button type="button" onclick="saveNewBudget()" class="bg-blue-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-600 transition">Guardar Nuevo</button></div>
@@ -366,10 +370,23 @@
             </section>
 
             <!-- AYUDA -->
-            <section id="help" class="hidden bg-white p-6 rounded-lg shadow-xl space-y-6">
-                <h2 class="text-2xl font-bold text-gray-700 mb-4">Guía de Uso</h2>
-                <div class="space-y-4">
-                    <div><h3 class="text-xl font-semibold text-blue-700">7. Sincronización Firebase ☁️</h3><p class="text-gray-600">V3.0: todos los datos se guardan <strong>exclusivamente en Firebase</strong>. No se usa localStorage para datos. El indicador en la esquina inferior derecha muestra el estado. Usa Exportar/Importar JSON como respaldo adicional.</p></div>
+            <section id="quick-capture" class="hidden bg-white p-4 md:p-6 rounded-lg shadow-xl">
+                <h2 class="text-2xl font-bold text-gray-700 mb-1">Captura rápida ⚡</h2>
+                <p class="text-sm text-gray-500 mb-4">Anota el gasto en segundos. Es solo informativo: no cambia saldos hasta que lo formalices como registro o transferencia.</p>
+                <form id="qc-form" class="space-y-3 p-4 bg-blue-50 rounded-xl border border-blue-100" novalidate>
+                    <input type="hidden" id="qc-edit-id">
+                    <p id="qc-edit-label" class="hidden text-sm font-semibold text-blue-700">✏️ Editando captura</p>
+                    <div><label for="qc-value" class="block text-gray-700 font-bold mb-1">Valor ($)</label><input id="qc-value" type="text" inputmode="numeric" placeholder="0" autocomplete="off" class="w-full px-4 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300 py-3 text-2xl font-bold"></div>
+                    <div><label for="qc-name" class="block text-gray-700 font-bold mb-1">Nombre</label><input id="qc-name" type="text" placeholder="Ej: Almuerzo, taxi, farmacia…" autocomplete="off" enterkeyhint="done" class="w-full px-4 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300 py-3 text-lg"></div>
+                    <div><label for="qc-account" class="block text-gray-700 font-bold mb-1">Cuenta</label><select id="qc-account" class="w-full px-4 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300 py-3 text-lg bg-white"></select><p id="qc-account-balance" class="text-xs text-gray-500 mt-1"></p></div>
+                    <div><label for="qc-date" class="block text-gray-700 font-bold mb-1">Fecha</label><input id="qc-date" type="date" class="w-full px-4 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300 py-3 text-lg bg-white"></div>
+                    <div class="flex gap-2 pt-1"><button type="button" id="qc-cancel-edit" class="hidden flex-1 bg-gray-500 text-white py-3 rounded-lg font-semibold text-lg hover:bg-gray-600 transition">Cancelar</button><button type="submit" id="qc-submit" class="flex-1 bg-blue-600 text-white py-3 rounded-lg font-bold text-lg hover:bg-blue-700 transition shadow">Guardar captura</button></div>
+                </form>
+                <div class="mt-6">
+                    <div class="flex flex-wrap justify-between items-center gap-2 mb-3"><h3 class="text-xl font-bold text-gray-700">Capturas</h3><button type="button" onclick="deleteConvertedCaptures()" class="bg-red-50 text-red-700 border border-red-200 px-3 py-2 rounded-lg text-sm font-semibold hover:bg-red-100 transition">🗑 Eliminar transformadas</button></div>
+                    <div class="flex flex-col md:flex-row gap-2 mb-2 p-3 bg-gray-50 rounded-lg"><div class="relative flex-grow"><span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">🔍</span><input type="search" id="qc-search" placeholder="Buscar por nombre o cuenta…" autocomplete="off" class="w-full px-4 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300 py-2 pl-10"></div><select id="qc-filter" class="md:w-56 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300 bg-white"><option value="all">Todas</option><option value="pending">Pendientes</option><option value="converted">Transformadas</option></select></div>
+                    <p id="qc-count" class="text-xs text-gray-500 mb-3"></p>
+                    <div id="qc-list" class="space-y-2"></div>
                 </div>
             </section>
         </main>
@@ -397,6 +414,7 @@
     const getTransactions = () => JSON.parse(JSON.stringify(_st('transactions')  || []));
     const getCreditCards  = () => JSON.parse(JSON.stringify(_st('credit_cards')  || []));
     const getSavedBudgets = () => JSON.parse(JSON.stringify(_st('saved_budgets') || []));
+    const getQuickCaptures = () => JSON.parse(JSON.stringify(_st('quick_captures') || []));
 
     // ─── Helpers de formato ──────────────────────────────────────────
     // ─── Redondeo: la app trabaja siempre con pesos enteros ───────────
@@ -457,7 +475,8 @@
             creditCards:           getCreditCards(),
             savedBudgets:          getSavedBudgets(),
             checkedTransactions:   _st('checkedTransactions')   || {},
-            pocketPaymentsChecked: _st('pocketPaymentsChecked') || {}
+            pocketPaymentsChecked: _st('pocketPaymentsChecked') || {},
+            quickCaptures:         getQuickCaptures()
         };
         const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
         const url=URL.createObjectURL(blob), a=document.createElement('a');
@@ -485,6 +504,7 @@
                 _set('saved_budgets',         d.savedBudgets         || []);
                 _set('checkedTransactions',   d.checkedTransactions   || {});
                 _set('pocketPaymentsChecked', d.pocketPaymentsChecked || {});
+                _set('quick_captures',        d.quickCaptures         || []);
                 _set('lastModified', new Date().toLocaleString('es-CO',{dateStyle:'full',timeStyle:'medium'}));
 
                 // Subir a Firebase
@@ -505,7 +525,7 @@
     window.importDataFromJson = importDataFromJson;
 
     // ─── UI ──────────────────────────────────────────────────────────
-    const sections=['dashboard','register','accounts','pockets','transfers','credit-cards','automation','history-view','help'];
+    const sections=['dashboard','register','accounts','pockets','transfers','credit-cards','automation','history-view','quick-capture'];
     const monthNames=["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
     const ACCOUNT_TYPES={prestamo_account:'Cuenta de Préstamo',anticipos:'Cuenta de Anticipos',virtual:'Cuenta Vida Real'};
     const POCKET_TYPES={ahorro:'Ahorro',pagos:'Pagos','gastos-personales':'Gastos Personales'};
@@ -631,6 +651,7 @@ const makeSelectSearchable = (selectId) => {
 };
 
     function showSection(id){
+        if(pendingCapture&&id!==(pendingCapture.kind==='transaction'?'register':'transfers')){pendingCapture=null;hideCaptureBanners();}
         sections.forEach(s=>document.getElementById(s).classList.add('hidden'));
         document.getElementById(id).classList.remove('hidden');
         if(!['history-view'].includes(id)){
@@ -643,6 +664,7 @@ const makeSelectSearchable = (selectId) => {
         if(id==='transfers'){const a=getAccounts(),p=getPockets();renderTransferOptions(a,p);document.getElementById('transfer-date').valueAsDate=new Date();makeSelectSearchable('transfer-source-account');makeSelectSearchable('transfer-source-pocket');makeSelectSearchable('transfer-destination-account');makeSelectSearchable('transfer-destination-pocket');}
         if(id==='credit-cards')document.getElementById('purchase-date').valueAsDate=new Date();
         if(id==='automation')loadAutomationBudget();
+        if(id==='quick-capture')openQuickCaptureSection();
     }
     window.showSection=showSection;
 
@@ -680,7 +702,8 @@ const makeSelectSearchable = (selectId) => {
         credit_cards:          _st('credit_cards')          || [],
         saved_budgets:         _st('saved_budgets')         || [],
         checkedTransactions:   _st('checkedTransactions')   || {},
-        pocketPaymentsChecked: _st('pocketPaymentsChecked') || {}
+        pocketPaymentsChecked: _st('pocketPaymentsChecked') || {},
+        quick_captures:        _st('quick_captures')        || []
     }));
     const sameSnapshot = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 
@@ -744,6 +767,7 @@ const makeSelectSearchable = (selectId) => {
     // ════════════════════════════════════════════════════════════════
     const loadData=()=>{
         roundAppState();
+        if(window.renderQuickCaptures)setTimeout(window.renderQuickCaptures,0);
         const lm=_st('lastModified');
         document.getElementById('last-modified-date').textContent=lm?`Última modificación: ${lm}`:'Aún no hay modificaciones.';
 
@@ -1091,11 +1115,13 @@ const makeSelectSearchable = (selectId) => {
         const isVirtual=srcType==='account'&&srcItem.type==='virtual'&&dstType==='pocket';
         if(!isVirtual)srcItem.balance-=value; dstItem.balance+=value;
         _set('accounts',accounts); _set('pockets',pockets);
-        const txs=getTransactions(); txs.push({id:crypto.randomUUID(),date,concept,value,type:'transfer',sourceId:srcId,sourceType:srcType,destinationId:dstId,destinationType:dstType,finalSourceBalance:srcItem.balance,finalDestinationBalance:dstItem.balance,createdAt:new Date().toISOString()});
+        const txs=getTransactions(), newTrId=crypto.randomUUID(); txs.push({id:newTrId,date,concept,value,type:'transfer',sourceId:srcId,sourceType:srcType,destinationId:dstId,destinationType:dstType,finalSourceBalance:srcItem.balance,finalDestinationBalance:dstItem.balance,createdAt:new Date().toISOString()});
+        const fromCapture=completeCaptureConversion('transfer',newTrId);
         _set('transactions',txs); syncToFirebase(); loadData(); showMessage('Transferencia realizada.'); form.reset();
         document.getElementById('transfer-date').valueAsDate=new Date();
         makeSelectSearchable('transfer-source-account'); makeSelectSearchable('transfer-source-pocket');
         makeSelectSearchable('transfer-destination-account'); makeSelectSearchable('transfer-destination-pocket');
+        if(fromCapture){showSection('quick-capture');showMessage('Captura formalizada como transferencia.');}
     });
 
     const processAutomationRoutine=(month,year,fortnight)=>{
@@ -1602,6 +1628,159 @@ const makeSelectSearchable = (selectId) => {
         else if(tx.type==='transfer'){const src=tx.sourceType==='account'?accounts.find(a=>a.id===tx.sourceId):pockets.find(p=>p.id===tx.sourceId);const dst=tx.destinationType==='account'?accounts.find(a=>a.id===tx.destinationId):pockets.find(p=>p.id===tx.destinationId);const isVirtual=tx.sourceType==='account'&&src&&src.type==='virtual'&&tx.destinationType==='pocket';if(src&&!isVirtual)src.balance-=v;if(dst)dst.balance+=v;}
     };
 
+
+    // ════════════════════════════════════════════════════════════════
+    // CAPTURA RÁPIDA — notas informativas (no afectan saldos)
+    // ════════════════════════════════════════════════════════════════
+    let pendingCapture=null;            // {id, kind:'transaction'|'transfer'} mientras se formaliza
+    let lastQcAccountId='';
+    const escHtml=(t)=>String(t??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    const qcNorm=(t)=>String(t||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
+    const qcDateLabel=(d)=>{const x=parseTxDate(d);return isNaN(x)?(d||''):x.toLocaleDateString('es-CO',{weekday:'short',day:'numeric',month:'short',year:'numeric'});};
+    const virtualAccounts=()=>getAccounts().filter(a=>a&&a.name&&a.type==='virtual').sort((a,b)=>a.name.localeCompare(b.name,'es',{sensitivity:'base'}));
+
+    const hideCaptureBanners=()=>['capture-banner-register','capture-banner-transfer'].forEach(id=>{const el=document.getElementById(id);if(el){el.classList.add('hidden');el.innerHTML='';}});
+    const showCaptureBanner=(id,c)=>{const el=document.getElementById(id);el.innerHTML=`<div class="flex justify-between items-start gap-2"><span>⚡ Formalizando captura: <strong>${escHtml(c.name)}</strong> · ${formatNumber(c.value)}</span><button type="button" onclick="cancelCaptureConversion()" class="text-amber-700 font-bold underline whitespace-nowrap">Cancelar</button></div>`;el.classList.remove('hidden');};
+    window.cancelCaptureConversion=()=>{
+        const wasTx=pendingCapture&&pendingCapture.kind==='transaction';
+        pendingCapture=null; hideCaptureBanners();
+        if(wasTx){document.getElementById('register-modal').classList.add('hidden');document.body.style.overflow='';}
+        showSection('quick-capture');
+    };
+    const completeCaptureConversion=(kind,refId)=>{
+        if(!pendingCapture||pendingCapture.kind!==kind)return false;
+        const qc=getQuickCaptures(), c=qc.find(x=>x.id===pendingCapture.id);
+        if(c){c.status=kind;c.convertedAt=new Date().toISOString();c.convertedRef=refId;_set('quick_captures',qc);}
+        pendingCapture=null; hideCaptureBanners();
+        return !!c;
+    };
+
+    const fillQcAccounts=(selectedId)=>{
+        const sel=document.getElementById('qc-account'), accs=virtualAccounts();
+        sel.innerHTML=accs.length?'<option value="">Seleccione una cuenta…</option>'+accs.map(a=>`<option value="${a.id}">${escHtml(a.name)}</option>`).join(''):'<option value="">No hay cuentas tipo “Cuenta Vida Real”</option>';
+        const pick=selectedId&&accs.some(a=>a.id===selectedId)?selectedId:(accs.length===1?accs[0].id:'');
+        sel.value=pick; updateQcAccountBalance();
+    };
+    const updateQcAccountBalance=()=>{
+        const id=document.getElementById('qc-account').value, a=getAccounts().find(x=>x.id===id), p=document.getElementById('qc-account-balance');
+        p.textContent=a?`Saldo actual (informativo): ${formatNumber(a.balance)}`:(virtualAccounts().length?'':'Crea una cuenta tipo “Cuenta Vida Real” en el menú Cuentas.');
+    };
+    const resetQcForm=()=>{
+        document.getElementById('qc-edit-id').value='';
+        document.getElementById('qc-value').value=''; document.getElementById('qc-name').value='';
+        document.getElementById('qc-date').value=localTodayISO();
+        document.getElementById('qc-submit').textContent='Guardar captura';
+        document.getElementById('qc-cancel-edit').classList.add('hidden');
+        document.getElementById('qc-edit-label').classList.add('hidden');
+        fillQcAccounts(lastQcAccountId);
+    };
+    const openQuickCaptureSection=()=>{ if(!document.getElementById('qc-edit-id').value)resetQcForm(); else fillQcAccounts(document.getElementById('qc-account').value); renderQuickCaptures(); };
+
+    const renderQuickCaptures=()=>{
+        const all=getQuickCaptures(), accs=getAccounts();
+        const pend=all.filter(c=>!c.status);
+        const badge=document.getElementById('qc-badge');
+        if(badge){badge.textContent=pend.length>99?'99+':String(pend.length);badge.classList.toggle('hidden',pend.length===0);}
+        const list=document.getElementById('qc-list'); if(!list)return;
+        const q=qcNorm(document.getElementById('qc-search').value), f=document.getElementById('qc-filter').value;
+        const accName=(c)=>{const a=accs.find(a=>a.id===c.accountId);return a?a.name:(c.accountName||'Cuenta eliminada');};
+        const shown=all.filter(c=>(f==='all'||(f==='pending'?!c.status:!!c.status))&&(!q||qcNorm(c.name).includes(q)||qcNorm(accName(c)).includes(q)))
+            .sort((a,b)=>`${b.date||''}|${b.createdAt||''}`.localeCompare(`${a.date||''}|${a.createdAt||''}`));
+        const pendTotal=pend.reduce((s,c)=>s+(c.value||0),0);
+        document.getElementById('qc-count').textContent=`${pend.length} pendiente${pend.length===1?'':'s'} por ${formatNumber(pendTotal)} · ${all.length-pend.length} transformada${all.length-pend.length===1?'':'s'}`+((q||f!=='all')?` · mostrando ${shown.length}`:'');
+        if(shown.length===0){list.innerHTML=`<p class="text-sm text-gray-500 text-center py-6">${all.length===0?'Aún no hay capturas. Usa el formulario de arriba para anotar la primera.':'No hay capturas que coincidan con la búsqueda o el filtro.'}</p>`;return;}
+        const BTN='py-2.5 px-2 rounded-lg text-sm font-semibold transition text-center';
+        list.innerHTML=shown.map(c=>{
+            const conv=!!c.status, kindLbl=c.status==='transfer'?'transferencia':'registro';
+            const badgeHtml=conv?`<span class="inline-block mt-1 px-2 py-0.5 rounded-full bg-green-100 text-green-800 text-xs font-semibold">✓ Transformada en ${kindLbl}${c.convertedAt?' · '+new Date(c.convertedAt).toLocaleDateString('es-CO',{day:'2-digit',month:'short'}):''}</span>`
+                                :`<span class="inline-block mt-1 px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 text-xs font-semibold">⏳ Pendiente</span>`;
+            const actions=conv
+                ?`<div class="grid grid-cols-2 gap-2 mt-3"><button type="button" onclick="markCapturePending('${c.id}')" class="${BTN} bg-gray-100 text-gray-700 hover:bg-gray-200">↩ Marcar pendiente</button><button type="button" onclick="deleteQuickCapture('${c.id}')" class="${BTN} bg-red-50 text-red-700 hover:bg-red-100">🗑 Eliminar</button></div>`
+                :`<div class="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-3"><button type="button" onclick="convertCaptureToTransaction('${c.id}')" class="${BTN} bg-blue-600 text-white hover:bg-blue-700">➜ Registro</button><button type="button" onclick="convertCaptureToTransfer('${c.id}')" class="${BTN} bg-indigo-600 text-white hover:bg-indigo-700">⇄ Transferencia</button><button type="button" onclick="editQuickCapture('${c.id}')" class="${BTN} bg-yellow-100 text-yellow-800 hover:bg-yellow-200">✏️ Editar</button><button type="button" onclick="deleteQuickCapture('${c.id}')" class="${BTN} bg-red-50 text-red-700 hover:bg-red-100">🗑 Eliminar</button></div>`;
+            return `<div class="p-3 rounded-xl border shadow-sm ${conv?'bg-green-50 border-green-200 border-l-4 border-l-green-500':'bg-white border-gray-200 border-l-4 border-l-amber-400'}"><div class="flex justify-between items-start gap-3"><div class="min-w-0"><p class="font-bold text-gray-800 break-words ${conv?'opacity-70':''}">${escHtml(c.name)}</p><p class="text-xs text-gray-500 mt-0.5">📅 ${qcDateLabel(c.date)} · 🏦 ${escHtml(accName(c))}</p>${badgeHtml}</div><p class="text-lg font-extrabold whitespace-nowrap ${conv?'text-gray-400':'text-gray-800'}">${formatNumber(c.value)}</p></div>${actions}</div>`;
+        }).join('');
+    };
+    window.renderQuickCaptures=renderQuickCaptures;
+
+    document.getElementById('qc-form').addEventListener('submit',(e)=>{
+        e.preventDefault();
+        const value=parseFormattedNumber(document.getElementById('qc-value').value), name=document.getElementById('qc-name').value.trim();
+        const accountId=document.getElementById('qc-account').value, date=document.getElementById('qc-date').value||localTodayISO(), editId=document.getElementById('qc-edit-id').value;
+        if(!(value>0))return showMessage('Ingresa un valor mayor a cero.','error');
+        if(!name)return showMessage('Ingresa el nombre de la captura.','error');
+        const acc=virtualAccounts().find(a=>a.id===accountId);
+        if(!acc)return showMessage('Selecciona una cuenta tipo “Cuenta Vida Real”.','error');
+        saveState();
+        const qc=getQuickCaptures();
+        if(editId){const c=qc.find(x=>x.id===editId);if(!c)return showMessage('Captura no encontrada.','error');Object.assign(c,{value,name,accountId,accountName:acc.name,date});}
+        else qc.push({id:crypto.randomUUID(),value,name,accountId,accountName:acc.name,date,createdAt:new Date().toISOString(),status:null});
+        _set('quick_captures',qc); lastQcAccountId=accountId;
+        syncToFirebase(); loadData(); resetQcForm(); renderQuickCaptures();
+        showMessage(editId?'Captura actualizada.':'Captura guardada.');
+        if(!editId)document.getElementById('qc-value').focus();
+    });
+    document.getElementById('qc-account').addEventListener('change',updateQcAccountBalance);
+    document.getElementById('qc-cancel-edit').addEventListener('click',()=>{resetQcForm();});
+    document.getElementById('qc-search').addEventListener('input',renderQuickCaptures);
+    document.getElementById('qc-filter').addEventListener('change',renderQuickCaptures);
+    applyNumberFormatting('#qc-value');
+
+    window.editQuickCapture=(id)=>{
+        const c=getQuickCaptures().find(x=>x.id===id); if(!c)return;
+        document.getElementById('qc-edit-id').value=c.id;
+        document.getElementById('qc-value').value=(c.value||0).toLocaleString('es-CO');
+        document.getElementById('qc-name').value=c.name||'';
+        document.getElementById('qc-date').value=c.date||localTodayISO();
+        fillQcAccounts(c.accountId);
+        document.getElementById('qc-submit').textContent='Actualizar captura';
+        document.getElementById('qc-cancel-edit').classList.remove('hidden');
+        document.getElementById('qc-edit-label').classList.remove('hidden');
+        document.getElementById('qc-form').scrollIntoView({behavior:'smooth',block:'center'});
+    };
+    window.deleteQuickCapture=(id)=>{
+        const c=getQuickCaptures().find(x=>x.id===id); if(!c)return;
+        showConfirmationModal(`¿Eliminar la captura “${c.name}” por ${formatNumber(c.value)}?`,()=>{
+            saveState(); _set('quick_captures',getQuickCaptures().filter(x=>x.id!==id));
+            if(document.getElementById('qc-edit-id').value===id)resetQcForm();
+            syncToFirebase(); loadData(); renderQuickCaptures(); showMessage('Captura eliminada.');
+        });
+    };
+    window.deleteConvertedCaptures=()=>{
+        const n=getQuickCaptures().filter(c=>c.status).length;
+        if(n===0)return showMessage('No hay capturas transformadas para eliminar.','info');
+        showConfirmationModal(`¿Eliminar ${n} captura${n===1?'':'s'} ya transformada${n===1?'':'s'}? Los registros y transferencias creados no se modifican.`,()=>{
+            saveState(); _set('quick_captures',getQuickCaptures().filter(c=>!c.status));
+            syncToFirebase(); loadData(); renderQuickCaptures(); showMessage(`${n} captura${n===1?'':'s'} eliminada${n===1?'':'s'}.`);
+        });
+    };
+    window.markCapturePending=(id)=>{
+        saveState(); const qc=getQuickCaptures(), c=qc.find(x=>x.id===id); if(!c)return;
+        c.status=null; delete c.convertedAt; delete c.convertedRef; _set('quick_captures',qc);
+        syncToFirebase(); loadData(); renderQuickCaptures(); showMessage('Captura marcada como pendiente.','info');
+    };
+    window.convertCaptureToTransaction=(id)=>{
+        const c=getQuickCaptures().find(x=>x.id===id); if(!c)return;
+        showSection('register'); pendingCapture={id,kind:'transaction'};
+        openRegisterModal();
+        document.getElementById('concept').value=c.name||'';
+        document.getElementById('date').value=c.date||localTodayISO();
+        const t=document.getElementById('type'); t.value='expense'; t.dispatchEvent(new Event('change',{bubbles:true}));
+        document.getElementById('value').value=(c.value||0).toLocaleString('es-CO');
+        const ac=document.getElementById('afecta-cuenta'); if([...ac.options].some(o=>o.value===c.accountId)){ac.value=c.accountId;ac.dispatchEvent(new Event('change',{bubbles:true}));}
+        showCaptureBanner('capture-banner-register',c);
+    };
+    window.convertCaptureToTransfer=(id)=>{
+        const c=getQuickCaptures().find(x=>x.id===id); if(!c)return;
+        pendingCapture={id,kind:'transfer'}; showSection('transfers');
+        const f=document.getElementById('transfer-form'); f.reset();
+        document.getElementById('transfer-concept').value=c.name||'';
+        document.getElementById('transfer-date').value=c.date||localTodayISO();
+        document.getElementById('transfer-value').value=(c.value||0).toLocaleString('es-CO');
+        const sa=document.getElementById('transfer-source-account'); if([...sa.options].some(o=>o.value===c.accountId)){sa.value=c.accountId;sa.dispatchEvent(new Event('change',{bubbles:true}));}
+        showCaptureBanner('capture-banner-transfer',c);
+        window.scrollTo({top:0,behavior:'smooth'});
+    };
+
     // ── Ventana de registro ──────────────────────────────────────────
     const refreshRegisterList=(keepFilter=true)=>{
         const sel=document.getElementById('register-month-filter'), prev=sel.value;
@@ -1631,6 +1810,7 @@ const makeSelectSearchable = (selectId) => {
         setTimeout(()=>document.getElementById('concept').focus(),50);
     };
     window.closeRegisterModal=()=>{
+        if(pendingCapture&&pendingCapture.kind==='transaction'){pendingCapture=null;hideCaptureBanners();document.getElementById('register-modal').classList.add('hidden');document.body.style.overflow='';showSection('quick-capture');return;}
         document.getElementById('register-modal').classList.add('hidden');
         document.body.style.overflow='';
     };
@@ -1655,9 +1835,11 @@ const makeSelectSearchable = (selectId) => {
         if(newTx.accountId){const a=accounts.find(a=>a.id===newTx.accountId);if(a)newTx.finalAccountBalance=a.balance;}
         if(newTx.pocketId){const p=pockets.find(p=>p.id===newTx.pocketId);if(p)newTx.finalPocketBalance=p.balance;}
         txs.push(newTx);
+        const fromCapture=completeCaptureConversion('transaction',newTx.id);
         _set('accounts',accounts); _set('pockets',pockets); _set('transactions',txs);
         syncToFirebase(); loadData(); showMessage('Movimiento registrado con éxito.');
         closeRegisterModal(); refreshRegisterList();
+        if(fromCapture){showSection('quick-capture');showMessage('Captura formalizada como registro.');}
     });
 
     // ════════════════════════════════════════════════════════════════

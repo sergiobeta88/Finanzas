@@ -9,7 +9,7 @@
     <link rel="icon" type="image/svg+xml" id="app-favicon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%232b6cb0'/%3E%3Cstop offset='1' stop-color='%231a365d'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='14' fill='url%28%23g%29'/%3E%3Crect x='8' y='38' width='9' height='16' rx='2' fill='%239ae6b4'/%3E%3Crect x='20' y='30' width='9' height='24' rx='2' fill='%2368d391'/%3E%3Crect x='32' y='22' width='9' height='32' rx='2' fill='%2348bb78'/%3E%3Ccircle cx='45' cy='20' r='13' fill='%23f6c744' stroke='%23b7791f' stroke-width='2.5'/%3E%3Ctext x='45' y='21' text-anchor='middle' dominant-baseline='central' font-family='Arial%2CHelvetica%2Csans-serif' font-weight='700' font-size='17' fill='%23744210'%3E%24%3C/text%3E%3C/svg%3E">
     <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%232b6cb0'/%3E%3Cstop offset='1' stop-color='%231a365d'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='14' fill='url%28%23g%29'/%3E%3Crect x='8' y='38' width='9' height='16' rx='2' fill='%239ae6b4'/%3E%3Crect x='20' y='30' width='9' height='24' rx='2' fill='%2368d391'/%3E%3Crect x='32' y='22' width='9' height='32' rx='2' fill='%2348bb78'/%3E%3Ccircle cx='45' cy='20' r='13' fill='%23f6c744' stroke='%23b7791f' stroke-width='2.5'/%3E%3Ctext x='45' y='21' text-anchor='middle' dominant-baseline='central' font-family='Arial%2CHelvetica%2Csans-serif' font-weight='700' font-size='17' fill='%23744210'%3E%24%3C/text%3E%3C/svg%3E">
     <link rel="manifest" id="manifest-placeholder">
-    <title>Gestión de Finanzas Personales V3.7</title>
+    <title>Gestión de Finanzas Personales V3.8</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -166,16 +166,16 @@
 
     <div class="max-w-4xl mx-auto p-4 md:p-8">
         <header class="bg-white rounded-lg shadow-xl p-4 sticky top-4 z-50">
-            <h1 class="text-3xl md:text-4xl font-extrabold text-center text-blue-800">Finanzas Personales V3.7</h1>
-            <nav id="nav-links" class="flex justify-around items-center mt-4 p-2 bg-gray-800 rounded-lg shadow-inner">
-                <button onclick="showSection('dashboard')"     data-section="dashboard"     class="flex-1 text-center py-2 px-1 text-xs md:text-base font-semibold text-gray-400 hover:text-white hover:bg-gray-700 transition rounded-lg bg-gray-700">Dashboard</button>
-                <button onclick="showSection('register')"      data-section="register"      class="flex-1 text-center py-2 px-1 text-xs md:text-base font-semibold text-gray-400 hover:text-white hover:bg-gray-700 transition rounded-lg">Registro</button>
-                <button onclick="showSection('accounts')"      data-section="accounts"      class="flex-1 text-center py-2 px-1 text-xs md:text-base font-semibold text-gray-400 hover:text-white hover:bg-gray-700 transition rounded-lg">Cuentas</button>
-                <button onclick="showSection('pockets')"       data-section="pockets"       class="flex-1 text-center py-2 px-1 text-xs md:text-base font-semibold text-gray-400 hover:text-white hover:bg-gray-700 transition rounded-lg">Bolsillos</button>
-                <button onclick="showSection('transfers')"     data-section="transfers"     class="flex-1 text-center py-2 px-1 text-xs md:text-base font-semibold text-gray-400 hover:text-white hover:bg-gray-700 transition rounded-lg">Transferencias</button>
-                <button onclick="showSection('credit-cards')"  data-section="credit-cards"  class="flex-1 text-center py-2 px-1 text-xs md:text-base font-semibold text-gray-400 hover:text-white hover:bg-gray-700 transition rounded-lg">Tarjetas</button>
-                <button onclick="showSection('automation')"    data-section="automation"    class="flex-1 text-center py-2 px-1 text-xs md:text-base font-semibold text-gray-400 hover:text-white hover:bg-gray-700 transition rounded-lg">Automatización</button>
-                <button onclick="showSection('help')"          data-section="help"          class="flex-1 text-center py-2 px-1 text-xs md:text-base font-semibold text-gray-400 hover:text-white hover:bg-gray-700 transition rounded-lg">Ayuda</button>
+            <h1 class="text-2xl md:text-4xl font-extrabold text-center text-blue-800">Finanzas Personales V3.8</h1>
+            <nav id="nav-links" class="grid grid-cols-4 gap-1 md:flex md:justify-around md:items-center mt-3 md:mt-4 p-1.5 md:p-2 bg-gray-800 rounded-lg shadow-inner">
+                <button onclick="showSection('dashboard')" data-section="dashboard" class="flex flex-col md:flex-row items-center justify-center gap-0.5 md:gap-1 md:flex-1 min-h-[3.5rem] md:min-h-0 py-2 px-1 font-semibold text-gray-300 hover:text-white hover:bg-gray-700 transition rounded-lg bg-gray-700 text-white"><span class="text-2xl md:text-base leading-none" aria-hidden="true">📊</span><span class="text-[13px] md:text-sm lg:text-base leading-tight"><span class="md:hidden">Inicio</span><span class="hidden md:inline">Dashboard</span></span></button>
+                <button onclick="showSection('register')" data-section="register" class="flex flex-col md:flex-row items-center justify-center gap-0.5 md:gap-1 md:flex-1 min-h-[3.5rem] md:min-h-0 py-2 px-1 font-semibold text-gray-300 hover:text-white hover:bg-gray-700 transition rounded-lg"><span class="text-2xl md:text-base leading-none" aria-hidden="true">✍️</span><span class="text-[13px] md:text-sm lg:text-base leading-tight"><span class="md:hidden">Registro</span><span class="hidden md:inline">Registro</span></span></button>
+                <button onclick="showSection('accounts')" data-section="accounts" class="flex flex-col md:flex-row items-center justify-center gap-0.5 md:gap-1 md:flex-1 min-h-[3.5rem] md:min-h-0 py-2 px-1 font-semibold text-gray-300 hover:text-white hover:bg-gray-700 transition rounded-lg"><span class="text-2xl md:text-base leading-none" aria-hidden="true">🏦</span><span class="text-[13px] md:text-sm lg:text-base leading-tight"><span class="md:hidden">Cuentas</span><span class="hidden md:inline">Cuentas</span></span></button>
+                <button onclick="showSection('pockets')" data-section="pockets" class="flex flex-col md:flex-row items-center justify-center gap-0.5 md:gap-1 md:flex-1 min-h-[3.5rem] md:min-h-0 py-2 px-1 font-semibold text-gray-300 hover:text-white hover:bg-gray-700 transition rounded-lg"><span class="text-2xl md:text-base leading-none" aria-hidden="true">👛</span><span class="text-[13px] md:text-sm lg:text-base leading-tight"><span class="md:hidden">Bolsillos</span><span class="hidden md:inline">Bolsillos</span></span></button>
+                <button onclick="showSection('transfers')" data-section="transfers" class="flex flex-col md:flex-row items-center justify-center gap-0.5 md:gap-1 md:flex-1 min-h-[3.5rem] md:min-h-0 py-2 px-1 font-semibold text-gray-300 hover:text-white hover:bg-gray-700 transition rounded-lg"><span class="text-2xl md:text-base leading-none" aria-hidden="true">🔁</span><span class="text-[13px] md:text-sm lg:text-base leading-tight"><span class="md:hidden">Transferir</span><span class="hidden md:inline">Transferencias</span></span></button>
+                <button onclick="showSection('credit-cards')" data-section="credit-cards" class="flex flex-col md:flex-row items-center justify-center gap-0.5 md:gap-1 md:flex-1 min-h-[3.5rem] md:min-h-0 py-2 px-1 font-semibold text-gray-300 hover:text-white hover:bg-gray-700 transition rounded-lg"><span class="text-2xl md:text-base leading-none" aria-hidden="true">💳</span><span class="text-[13px] md:text-sm lg:text-base leading-tight"><span class="md:hidden">Tarjetas</span><span class="hidden md:inline">Tarjetas</span></span></button>
+                <button onclick="showSection('automation')" data-section="automation" class="flex flex-col md:flex-row items-center justify-center gap-0.5 md:gap-1 md:flex-1 min-h-[3.5rem] md:min-h-0 py-2 px-1 font-semibold text-gray-300 hover:text-white hover:bg-gray-700 transition rounded-lg"><span class="text-2xl md:text-base leading-none" aria-hidden="true">⚙️</span><span class="text-[13px] md:text-sm lg:text-base leading-tight"><span class="md:hidden">Automatizar</span><span class="hidden md:inline">Automatización</span></span></button>
+                <button onclick="showSection('help')" data-section="help" class="flex flex-col md:flex-row items-center justify-center gap-0.5 md:gap-1 md:flex-1 min-h-[3.5rem] md:min-h-0 py-2 px-1 font-semibold text-gray-300 hover:text-white hover:bg-gray-700 transition rounded-lg"><span class="text-2xl md:text-base leading-none" aria-hidden="true">❓</span><span class="text-[13px] md:text-sm lg:text-base leading-tight"><span class="md:hidden">Ayuda</span><span class="hidden md:inline">Ayuda</span></span></button>
             </nav>
         </header>
 
@@ -204,7 +204,7 @@
                     <div id="loan-balances-list" class="mt-4"><h3 class="text-xl font-bold text-red-500 mb-2">Préstamos</h3><div id="loan-only-balances"></div></div>
                 </div>
                 <div class="bg-white p-6 rounded-lg shadow-xl text-center flex flex-col md:flex-row gap-4">
-                    <button onclick="undoLastAction()" id="undo-btn" class="flex-1 bg-red-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-red-600 transition disabled:opacity-50 disabled:cursor-not-allowed">Deshacer Última Acción</button>
+                    <button onclick="undoLastAction()" id="undo-btn" class="flex-1 bg-red-500 text-white px-4 py-3 md:py-2 rounded-lg font-semibold hover:bg-red-600 transition disabled:opacity-50 disabled:cursor-not-allowed">Deshacer Última Acción</button>
                     <button onclick="redoLastAction()" id="redo-btn" class="flex-1 bg-gray-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-gray-600 transition disabled:opacity-50 disabled:cursor-not-allowed">Rehacer Última Acción</button>
                     <button onclick="exportDataToJson()" class="flex-1 bg-yellow-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-yellow-600 transition">Exportar Datos</button>
                     <label for="import-file-input" class="flex-1 bg-blue-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-600 transition cursor-pointer flex items-center justify-center">Importar Datos</label>
@@ -214,7 +214,8 @@
 
             <!-- REGISTRO -->
             <section id="register" class="hidden bg-white p-6 rounded-lg shadow-xl">
-                <h2 class="text-2xl font-bold text-gray-700 mb-4">Registrar Movimiento ✍️</h2>
+                <div class="flex flex-wrap justify-between items-center gap-3 mb-4"><h2 class="text-2xl font-bold text-gray-700">Movimientos ✍️</h2><button type="button" onclick="openRegisterModal()" class="w-full sm:w-auto bg-blue-500 text-white px-5 py-3 rounded-lg font-semibold hover:bg-blue-600 transition shadow">+ Registrar nueva transacción</button></div>
+                <div id="register-modal" class="fixed inset-0 bg-gray-800 bg-opacity-50 hidden z-50 overflow-y-auto"><div class="min-h-full flex items-start md:items-center justify-center p-3 md:p-4"><div class="bg-white p-5 md:p-6 rounded-lg shadow-xl w-full max-w-2xl"><div class="flex justify-between items-center mb-4"><h3 class="text-xl font-bold text-gray-700">Registrar nueva transacción</h3><button type="button" onclick="closeRegisterModal()" class="text-gray-400 hover:text-gray-700 text-2xl leading-none px-2" title="Cerrar">✕</button></div>
                 <form id="register-form" class="space-y-4">
                     <div class="flex flex-col md:flex-row md:space-x-4 space-y-4 md:space-y-0">
                         <div class="flex-1"><label for="concept" class="block text-gray-700 font-bold mb-2">Concepto</label><input type="text" id="concept" name="concept" required class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300"></div>
@@ -233,13 +234,15 @@
                         </div>
                         <input type="hidden" id="multi-pocket-data" name="multi-pocket-data">
                     </div>
-                    <button type="submit" class="w-full bg-blue-500 text-white px-4 py-3 rounded-lg font-semibold hover:bg-blue-600 transition">Registrar</button>
+                    <div class="flex justify-end gap-3 pt-2"><button type="button" onclick="closeRegisterModal()" class="bg-gray-500 text-white px-4 py-3 rounded-lg font-semibold hover:bg-gray-600 transition">Cancelar</button><button type="submit" class="bg-blue-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-600 transition">Registrar</button></div>
                 </form>
-                <div class="mt-6 border-t pt-6">
+                </div></div></div>
+                <div>
                     <h3 class="text-xl font-bold text-gray-700 mb-4">Historial de Movimientos</h3>
-                    <div class="flex items-center space-x-4 mb-4 bg-gray-50 p-3 rounded-lg">
+                    <div class="flex flex-col md:flex-row md:items-center gap-3 mb-4 bg-gray-50 p-3 rounded-lg">
                         <label for="register-month-filter" class="text-gray-700 font-bold">Filtrar por mes:</label>
                         <select id="register-month-filter" class="flex-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300"></select>
+                        <select id="tx-sort-order" class="md:w-60 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300"><option value="desc">Más recientes primero</option><option value="asc">Más antiguos primero</option></select>
                     </div>
                     <div id="all-transactions-list" class="space-y-2"></div>
                 </div>
@@ -374,7 +377,7 @@
 
     <!-- MODALES (idénticos a la versión anterior) -->
     <div id="confirmation-modal" class="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center hidden z-50"><div class="bg-white p-6 rounded-lg shadow-xl w-full max-w-sm"><h3 id="modal-title" class="text-xl font-bold text-gray-700 mb-4">Confirmar Acción</h3><p id="modal-message" class="mb-6 text-gray-600">¿Estás seguro?</p><div class="flex justify-end space-x-4"><button id="modal-cancel-btn" class="bg-gray-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-gray-600 transition">Cancelar</button><button id="modal-confirm-btn" class="bg-red-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-red-600 transition">Confirmar</button></div></div></div>
-    <div id="multi-pocket-modal" class="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center hidden z-50"><div class="bg-white p-6 rounded-lg shadow-xl w-full max-w-lg"><h3 class="text-xl font-bold text-gray-700 mb-2">Distribuir Gasto</h3><p class="mb-4">Valor total: <span id="modal-expense-total" class="font-bold"></span></p><div id="distribution-list" class="space-y-2 mb-4 max-h-48 overflow-y-auto"></div><div class="p-4 bg-gray-50 rounded-lg mb-4"><div class="flex flex-col md:flex-row gap-2 items-end"><div class="flex-grow"><label for="modal-pocket-select" class="block text-sm font-bold text-gray-700">Bolsillo</label><select id="modal-pocket-select" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300"></select></div><div class="flex-grow"><label for="modal-pocket-amount" class="block text-sm font-bold text-gray-700">Monto</label><input type="text" id="modal-pocket-amount" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300"></div><button type="button" id="modal-add-pocket-btn" class="bg-blue-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-600 transition">Añadir</button></div></div><div class="text-right font-bold mb-4"><p>Cubierto: <span id="modal-amount-covered" class="text-green-600">$ 0</span></p><p>Restante: <span id="modal-amount-remaining" class="text-red-500">$ 0</span></p></div><div class="flex justify-end space-x-4"><button id="modal-cancel-distribution-btn" type="button" class="bg-gray-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-gray-600 transition">Cancelar</button><button id="modal-confirm-distribution-btn" type="button" class="bg-green-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-green-600 transition disabled:opacity-50" disabled>Confirmar</button></div></div></div>
+    <div id="multi-pocket-modal" class="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center hidden z-50"><div class="bg-white p-5 md:p-6 rounded-lg shadow-xl w-full max-w-lg mx-3"><h3 class="text-xl font-bold text-gray-700 mb-2">Distribuir Gasto</h3><p class="mb-4">Valor total: <span id="modal-expense-total" class="font-bold"></span></p><div id="distribution-list" class="space-y-2 mb-4 max-h-48 overflow-y-auto"></div><div class="p-4 bg-gray-50 rounded-lg mb-4"><div class="flex flex-col md:flex-row gap-2 items-end"><div class="flex-grow"><label for="modal-pocket-select" class="block text-sm font-bold text-gray-700">Bolsillo <span class="font-normal text-gray-500">(escribe para buscar)</span></label><select id="modal-pocket-select" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300"></select></div><div class="flex-grow"><label for="modal-pocket-amount" class="block text-sm font-bold text-gray-700">Monto</label><input type="text" id="modal-pocket-amount" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300"></div><button type="button" id="modal-add-pocket-btn" class="bg-blue-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-600 transition">Añadir</button></div></div><div class="text-right font-bold mb-4"><p>Cubierto: <span id="modal-amount-covered" class="text-green-600">$ 0</span></p><p>Restante: <span id="modal-amount-remaining" class="text-red-500">$ 0</span></p></div><div class="flex justify-end space-x-4"><button id="modal-cancel-distribution-btn" type="button" class="bg-gray-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-gray-600 transition">Cancelar</button><button id="modal-confirm-distribution-btn" type="button" class="bg-green-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-green-600 transition disabled:opacity-50" disabled>Confirmar</button></div></div></div>
     <div id="pay-monthly-installment-modal" class="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center hidden z-50"><div class="bg-white p-6 rounded-lg shadow-xl w-full max-w-sm"><h3 class="text-xl font-bold text-gray-700 mb-4">Pagar Cuota Mensual</h3><div class="space-y-4"><div><label for="installment-pay-period" class="block text-gray-700 font-bold mb-2">Seleccionar Mes</label><select id="installment-pay-period" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300"></select></div><div class="text-right pt-4 space-x-4"><button onclick="closeMonthlyPayModal()" class="bg-gray-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-gray-600 transition">Cancelar</button><button id="monthly-installment-confirm-btn" class="bg-green-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-green-600 transition">Pagar Cuota</button></div></div></div></div>
     <div id="adjust-card-balance-modal" class="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center hidden z-50"><div class="bg-white p-6 rounded-lg shadow-xl w-full max-w-sm"><h3 class="text-xl font-bold text-gray-700 mb-4">Ajustar Saldo Manual</h3><div class="space-y-4"><div><label for="adjust-balance-value" class="block text-gray-700 font-bold mb-2">Nuevo Saldo ($)</label><input type="text" id="adjust-balance-value" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300"></div><div class="text-right pt-4 space-x-4"><button onclick="closeAdjustBalanceModal()" class="bg-gray-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-gray-600 transition">Cancelar</button><button id="adjust-balance-confirm-btn" class="bg-blue-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-600 transition">Actualizar Saldo</button></div></div></div></div>
     <div id="edit-item-modal" class="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center hidden z-50 p-4"><div class="bg-white p-6 rounded-lg shadow-xl w-full max-w-md max-h-full overflow-y-auto"><h3 id="edit-item-title" class="text-xl font-bold text-gray-700 mb-4">Editar</h3><form id="edit-item-form" class="space-y-4" novalidate><input type="hidden" id="edit-item-id"><input type="hidden" id="edit-item-col"><div><label for="edit-item-name" class="block text-gray-700 font-bold mb-2">Nombre</label><input type="text" id="edit-item-name" required class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300"></div><div><label for="edit-item-balance" id="edit-item-balance-label" class="block text-gray-700 font-bold mb-2">Saldo ($)</label><input type="text" id="edit-item-balance" required class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300"><p id="edit-item-balance-hint" class="text-xs text-gray-500 mt-1">Cambiar el saldo aquí lo ajusta directamente, sin registrar un movimiento.</p></div><div><label for="edit-item-type" class="block text-gray-700 font-bold mb-2">Tipo</label><select id="edit-item-type" required class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300"></select></div><div id="edit-item-payment-day-wrapper" class="hidden"><label for="edit-item-payment-day" class="block text-gray-700 font-bold mb-2">Día de pago del mes (1-31)</label><input type="number" id="edit-item-payment-day" min="1" max="31" step="1" placeholder="Ej: 15" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300"><p class="text-xs text-gray-500 mt-1">Si el mes tiene menos días, se toma el último día del mes.</p><label for="edit-item-budget" class="block text-gray-700 font-bold mb-2 mt-4">Presupuesto del pago ($)</label><input type="text" id="edit-item-budget" placeholder="Ej: 1.200.000" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300"><p class="text-xs text-gray-500 mt-1">Informativo: valor que debe tener el bolsillo para cubrir el pago. Se usa para monitorear el saldo en el Dashboard.</p></div><div class="flex justify-end space-x-4 pt-2"><button type="button" id="edit-item-cancel-btn" class="bg-gray-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-gray-600 transition">Cancelar</button><button type="submit" id="edit-item-submit" class="bg-blue-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-600 transition">Guardar Cambios</button></div></form></div></div>
@@ -511,7 +514,10 @@
     const sortPockets=(list)=>[...(list||[])].filter(p=>p&&p.name).sort((a,b)=>((POCKET_TYPE_ORDER[a.type]||9)-(POCKET_TYPE_ORDER[b.type]||9))||String(a.name).localeCompare(String(b.name),'es',{sensitivity:'base'}));
     const pocketTypeLabel=(p)=>POCKET_TYPES[p.type]||'Sin tipo';
 
-    let activeAutomationBudgetId=null, confirmCallback=null, previousSection='dashboard';
+    let activeAutomationBudgetId=null, confirmCallback=null, previousSection='dashboard', txSortDesc=true;
+    // Fechas 'AAAA-MM-DD' como fecha local (evita que el día 1 caiga en el mes anterior por la zona horaria)
+    const parseTxDate=(str)=>{const m=/^(\d{4})-(\d{2})-(\d{2})/.exec(str||'');return m?new Date(+m[1],+m[2]-1,+m[3]):new Date(str);};
+    const localTodayISO=()=>{const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;};
     // checkedTransactions y pocketPaymentsChecked se leen desde _appState
     const getChecked      = () => _st('checkedTransactions')   || {};
     const getPktPayments  = () => _st('pocketPaymentsChecked') || {};
@@ -567,7 +573,7 @@ const makeSelectSearchable = (selectId) => {
     const dropdown = document.createElement('div');
     dropdown.style.cssText = [
         'position:absolute','top:100%','left:0','width:100%',
-        'max-height:220px','overflow-y:auto','background:#fff',
+        'max-height:260px','overflow-y:auto','background:#fff',
         'border:1px solid #cbd5e0','border-radius:0 0 .5rem .5rem',
         'box-shadow:0 4px 8px rgba(0,0,0,.12)','z-index:9999',
         'display:none'
@@ -577,9 +583,10 @@ const makeSelectSearchable = (selectId) => {
     const getAllOpts = () => Array.from(select.options);
 
     const renderDropdown = (filter = '') => {
-        const q = filter.toLowerCase().trim();
+        const nz = (t) => String(t || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+        const q = nz(filter);
         dropdown.innerHTML = '';
-        const opts = getAllOpts().filter(o => o.value === '' || o.textContent.toLowerCase().includes(q));
+        const opts = getAllOpts().filter(o => (o.value === '' && !q) || (o.value !== '' && nz(o.textContent).includes(q)));
         if (!opts.length) {
             dropdown.innerHTML = '<div style="padding:8px 12px;color:#888;font-size:13px;">Sin resultados</div>';
             return;
@@ -588,7 +595,7 @@ const makeSelectSearchable = (selectId) => {
             const item = document.createElement('div');
             item.textContent = o.textContent;
             item.dataset.value = o.value;
-            item.style.cssText = 'padding:8px 12px;cursor:pointer;font-size:13px;border-bottom:1px solid #f0f0f0;line-height:1.4;';
+            item.style.cssText = 'padding:11px 12px;cursor:pointer;font-size:15px;border-bottom:1px solid #f0f0f0;line-height:1.35;';
             if (o.value === select.value) { item.style.background='#ebf4ff'; item.style.fontWeight='600'; }
             item.addEventListener('mousedown', e => {
                 e.preventDefault();
@@ -627,18 +634,11 @@ const makeSelectSearchable = (selectId) => {
         sections.forEach(s=>document.getElementById(s).classList.add('hidden'));
         document.getElementById(id).classList.remove('hidden');
         if(!['history-view'].includes(id)){
-            document.querySelectorAll('#nav-links button').forEach(l=>{l.classList.remove('bg-gray-700');if(l.dataset.section===id)l.classList.add('bg-gray-700');});
+            document.querySelectorAll('#nav-links button').forEach(l=>{l.classList.remove('bg-gray-700','text-white');if(l.dataset.section===id)l.classList.add('bg-gray-700','text-white');});
             previousSection=id;
         }
         if(id==='register'){
-            const txs=getTransactions(), accs=getAccounts(), pocks=getPockets();
-            populateMonthFilter('register-month-filter',txs,(f)=>renderTransactions('all-transactions-list',f,accs,pocks));
-            renderRegisterOptions(accs,pocks); makeSelectSearchable('afecta-cuenta'); makeSelectSearchable('afecta-bolsillo');
-            document.getElementById('distribution-summary-display').classList.add('hidden');
-            document.getElementById('pocket-selector-wrapper').classList.remove('hidden');
-            document.getElementById('multi-pocket-data').value='';
-            document.getElementById('afecta-bolsillo').disabled=false; document.getElementById('afecta-cuenta').disabled=false;
-            document.getElementById('type').value==='expense'?document.getElementById('distribute-expense-btn').classList.remove('hidden'):document.getElementById('distribute-expense-btn').classList.add('hidden');
+            refreshRegisterList(false);
         }
         if(id==='transfers'){const a=getAccounts(),p=getPockets();renderTransferOptions(a,p);document.getElementById('transfer-date').valueAsDate=new Date();makeSelectSearchable('transfer-source-account');makeSelectSearchable('transfer-source-pocket');makeSelectSearchable('transfer-destination-account');makeSelectSearchable('transfer-destination-pocket');}
         if(id==='credit-cards')document.getElementById('purchase-date').valueAsDate=new Date();
@@ -865,7 +865,9 @@ const makeSelectSearchable = (selectId) => {
     const renderTransactions=(containerId,transactions,accounts,pockets,contextItem=null)=>{
         const container=document.getElementById(containerId); if(!container)return;
         if(transactions.length===0){container.innerHTML=`<p class="text-sm text-gray-500 text-center">No hay transacciones para mostrar.</p>`;return;}
-        transactions.sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));
+        // Orden cronológico por fecha del movimiento; si la fecha es igual, por hora de registro
+        const dk=(t)=>`${t.date||''}|${t.createdAt||''}`;
+        transactions.sort((a,b)=>txSortDesc?dk(b).localeCompare(dk(a)):dk(a).localeCompare(dk(b)));
         let html='';
         transactions.forEach(tx=>{
             let typeLabel='',colorClass='',description='',balInfo='';
@@ -1035,7 +1037,7 @@ const makeSelectSearchable = (selectId) => {
             const key=`${year}-${month}-${fortnight}`;
             if(pocket.biweeklyPaymentHistory&&pocket.biweeklyPaymentHistory[key])return;
             let total=0; creditCards.forEach(card=>card.purchases.forEach(p=>{if(p.pocketId===pocket.id&&!isNewPurchase(p.date)&&(p.remainingBiWeekly>0||p.isRecurring))total+=p.biWeeklyPayment;}));
-            if(total>0){if(pocket.balance<total){showMessage(`Saldo insuficiente en ${pocket.name}.`,'error');return;}pocket.balance-=total;if(!pocket.biweeklyPaymentHistory)pocket.biweeklyPaymentHistory={};pocket.biweeklyPaymentHistory[key]=total;totalDeducted+=total;summary.push(`${pocket.name}: ${formatNumber(total)}`);transactions.push({id:crypto.randomUUID(),date:new Date().toISOString().split('T')[0],concept:`Reserva quincenal ${fortnight==='first'?'primera':'segunda'} quincena de ${monthNames[month]} ${year} desde ${pocket.name}`,value:total,type:'expense',pocketId:pocket.id,finalPocketBalance:pocket.balance,createdAt:new Date().toISOString()});}
+            if(total>0){if(pocket.balance<total){showMessage(`Saldo insuficiente en ${pocket.name}.`,'error');return;}pocket.balance-=total;if(!pocket.biweeklyPaymentHistory)pocket.biweeklyPaymentHistory={};pocket.biweeklyPaymentHistory[key]=total;totalDeducted+=total;summary.push(`${pocket.name}: ${formatNumber(total)}`);transactions.push({id:crypto.randomUUID(),date:localTodayISO(),concept:`Reserva quincenal ${fortnight==='first'?'primera':'segunda'} quincena de ${monthNames[month]} ${year} desde ${pocket.name}`,value:total,type:'expense',pocketId:pocket.id,finalPocketBalance:pocket.balance,createdAt:new Date().toISOString()});}
         });
         if(totalDeducted>0){_set('pockets',pockets);_set('transactions',transactions);syncToFirebase();loadData();showMessage(`Reservados ${formatNumber(totalDeducted)}. ${summary.join(', ')}.`,'success');}
         else showMessage('No hay cuotas pendientes o ya fueron deducidas.','error');
@@ -1068,7 +1070,7 @@ const makeSelectSearchable = (selectId) => {
         if(!pockets[pocketIdx].installmentTransferHistory)pockets[pocketIdx].installmentTransferHistory={};
         pockets[pocketIdx].installmentTransferHistory[exKey]=true;
         _set('pockets',pockets); _set('credit_cards',creditCards);
-        const txs=getTransactions(); txs.push({id:crypto.randomUUID(),date:new Date().toISOString().split('T')[0],concept:`Provisión cuota de ${card.name} a ${pockets[pocketIdx].name}`,value:totalBW,type:'income',accountId:null,pocketId,finalPocketBalance:pockets[pocketIdx].balance,createdAt:new Date().toISOString()});
+        const txs=getTransactions(); txs.push({id:crypto.randomUUID(),date:localTodayISO(),concept:`Provisión cuota de ${card.name} a ${pockets[pocketIdx].name}`,value:totalBW,type:'income',accountId:null,pocketId,finalPocketBalance:pockets[pocketIdx].balance,createdAt:new Date().toISOString()});
         _set('transactions',txs); syncToFirebase(); loadData(); showMessage(`Provisionados ${formatNumber(totalBW)} en ${pockets[pocketIdx].name}.`,'success'); form.reset();
     });
 
@@ -1104,7 +1106,7 @@ const makeSelectSearchable = (selectId) => {
         const exKey=`${budget.id}-${year}-${month}-${fortnight}`;
         if(budget.data&&budget.data.lastExecution===exKey)return showMessage('La rutina ya se ejecutó para esta quincena.','error');
         let totalAmount=0, pocketUpdates={}, txsToAdd=[];
-        for(const pId in budget.data){if(pId==='lastExecution')continue;const amt=parseFormattedNumber(budget.data[pId]);if(amt>0&&pockets.some(p=>p.id===pId)){const up=pockets.find(p=>p.id===pId);if(up){totalAmount+=amt;pocketUpdates[pId]=(pocketUpdates[pId]||0)+amt;txsToAdd.push({id:crypto.randomUUID(),date:new Date().toISOString().split('T')[0],concept:'Provisión automática quincenal',value:amt,type:'income',accountId:null,pocketId:pId,finalPocketBalance:up.balance+amt,createdAt:new Date().toISOString()});}}}
+        for(const pId in budget.data){if(pId==='lastExecution')continue;const amt=parseFormattedNumber(budget.data[pId]);if(amt>0&&pockets.some(p=>p.id===pId)){const up=pockets.find(p=>p.id===pId);if(up){totalAmount+=amt;pocketUpdates[pId]=(pocketUpdates[pId]||0)+amt;txsToAdd.push({id:crypto.randomUUID(),date:localTodayISO(),concept:'Provisión automática quincenal',value:amt,type:'income',accountId:null,pocketId:pId,finalPocketBalance:up.balance+amt,createdAt:new Date().toISOString()});}}}
         if(totalAmount===0)return showMessage('No hay valores en el presupuesto.','error');
         const finalPockets=pockets.map(p=>pocketUpdates[p.id]?{...p,balance:p.balance+pocketUpdates[p.id]}:p);
         budget.data.lastExecution=exKey;
@@ -1240,7 +1242,7 @@ const makeSelectSearchable = (selectId) => {
         if(value<=0)return showMessage('Ingrese un valor válido.','error');
         let cards=getCreditCards(), ci=cards.findIndex(c=>c.id===cardId);
         if(ci===-1)return showMessage('Tarjeta no encontrada.','error');
-        cards[ci].payments.push({id:crypto.randomUUID(),concept:'Abono Manual',value,date:new Date().toISOString().split('T')[0],createdAt:new Date().toISOString()});
+        cards[ci].payments.push({id:crypto.randomUUID(),concept:'Abono Manual',value,date:localTodayISO(),createdAt:new Date().toISOString()});
         cards[ci].currentBalance-=value; _set('credit_cards',cards); syncToFirebase(); loadData(); showMessage('Abono registrado.'); form.reset();
     });
 
@@ -1270,7 +1272,7 @@ const makeSelectSearchable = (selectId) => {
         saveState();
         let totalMonthly=0;
         card.purchases.forEach(p=>{if(!isNewPurchase(p.date)&&(p.remainingMonthly>0||p.isRecurring)){totalMonthly+=p.monthlyPayment;if(!p.isRecurring){p.remainingMonthly=Math.max(0,p.remainingMonthly-1);p.remainingBiWeekly=Math.max(0,p.remainingBiWeekly-2);}}});
-        if(totalMonthly>0){card.currentBalance-=totalMonthly;card.payments.push({id:crypto.randomUUID(),concept:`Pago Cuota Mensual: ${periodLabel}`,value:totalMonthly,date:new Date().toISOString().split('T')[0],createdAt:new Date().toISOString()});card.paidMonths[periodKey]=true;card.lastMonthlyPaymentMonth=periodKey;_set('credit_cards',cards);syncToFirebase();loadData();closeMonthlyPayModal();showMessage(`Pago ${periodLabel} por ${formatNumber(totalMonthly)} registrado.`);}
+        if(totalMonthly>0){card.currentBalance-=totalMonthly;card.payments.push({id:crypto.randomUUID(),concept:`Pago Cuota Mensual: ${periodLabel}`,value:totalMonthly,date:localTodayISO(),createdAt:new Date().toISOString()});card.paidMonths[periodKey]=true;card.lastMonthlyPaymentMonth=periodKey;_set('credit_cards',cards);syncToFirebase();loadData();closeMonthlyPayModal();showMessage(`Pago ${periodLabel} por ${formatNumber(totalMonthly)} registrado.`);}
         else showMessage('No hay cuotas mensuales pendientes.','error');
     });
 
@@ -1286,7 +1288,7 @@ const makeSelectSearchable = (selectId) => {
         if(!cardIdToAdjust)return;
         const nv=parseFormattedNumber(document.getElementById('adjust-balance-value').value);
         saveState(); let cards=getCreditCards(), ci=cards.findIndex(c=>c.id===cardIdToAdjust);
-        if(ci!==-1){const diff=nv-cards[ci].currentBalance;if(Math.abs(diff)>0.01){cards[ci].payments.push({id:crypto.randomUUID(),concept:'Ajuste Manual de Saldo',value:-diff,date:new Date().toISOString().split('T')[0],createdAt:new Date().toISOString()});cards[ci].currentBalance=nv;_set('credit_cards',cards);syncToFirebase();loadData();showMessage('Saldo ajustado.');}}
+        if(ci!==-1){const diff=nv-cards[ci].currentBalance;if(Math.abs(diff)>0.01){cards[ci].payments.push({id:crypto.randomUUID(),concept:'Ajuste Manual de Saldo',value:-diff,date:localTodayISO(),createdAt:new Date().toISOString()});cards[ci].currentBalance=nv;_set('credit_cards',cards);syncToFirebase();loadData();showMessage('Saldo ajustado.');}}
         closeAdjustBalanceModal();
     });
 
@@ -1398,10 +1400,10 @@ const makeSelectSearchable = (selectId) => {
     const populateMonthFilter=(selectId,transactions,renderCallback)=>{
         const select=document.getElementById(selectId); if(!select)return;
         select.innerHTML='<option value="all">Todos los meses</option>';
-        const available=new Set(); transactions.forEach(tx=>{const d=new Date(tx.date);available.add(`${d.getFullYear()}-${String(d.getMonth()).padStart(2,'0')}`);});
+        const available=new Set(); transactions.forEach(tx=>{const d=parseTxDate(tx.date);available.add(`${d.getFullYear()}-${String(d.getMonth()).padStart(2,'0')}`);});
         const sorted=[...available].sort().reverse(), curMY=`${new Date().getFullYear()}-${String(new Date().getMonth()).padStart(2,'0')}`;
         sorted.forEach(my=>{const[y,m]=my.split('-');const o=document.createElement('option');o.value=my;o.textContent=`${monthNames[parseInt(m)]} ${y}`;if(my===curMY)o.selected=true;select.appendChild(o);});
-        const filterAndRender=()=>{const sv=select.value;if(sv==='all')renderCallback(transactions);else{const[y,m]=sv.split('-');renderCallback(transactions.filter(tx=>{const d=new Date(tx.date);return d.getFullYear()===parseInt(y)&&d.getMonth()===parseInt(m);}));}};
+        const filterAndRender=()=>{const sv=select.value;if(sv==='all')renderCallback(transactions);else{const[y,m]=sv.split('-');renderCallback(transactions.filter(tx=>{const d=parseTxDate(tx.date);return d.getFullYear()===parseInt(y)&&d.getMonth()===parseInt(m);}));}};
         select.onchange=filterAndRender; filterAndRender();
     };
 
@@ -1429,7 +1431,8 @@ const makeSelectSearchable = (selectId) => {
         if(totalExpense<=0)return showMessage('Ingrese un valor de gasto válido primero.','error');
         distribution=[];
         const pockets=getPockets(), mps=document.getElementById('modal-pocket-select');
-        mps.innerHTML=''; sortPockets(pockets).forEach(p=>mps.innerHTML+=`<option value="${p.id}">${p.name} (${pocketTypeLabel(p)}) (${formatNumber(p.balance)})</option>`);
+        mps.innerHTML='<option value="">Buscar bolsillo…</option>'; sortPockets(pockets).forEach(p=>mps.innerHTML+=`<option value="${p.id}">${p.name} (${pocketTypeLabel(p)}) (${formatNumber(p.balance)})</option>`);
+        mps.value=''; makeSelectSearchable('modal-pocket-select'); document.getElementById('modal-pocket-amount').value='';
         document.getElementById('modal-expense-total').textContent=formatNumber(totalExpense);
         updateDistributionUI(); document.getElementById('multi-pocket-modal').classList.remove('hidden');
     });
@@ -1441,6 +1444,7 @@ const makeSelectSearchable = (selectId) => {
         distribution=distribution.filter(d=>d.pocketId!==pocketId);
         if(amount>pocket.balance)return showMessage('El monto excede el saldo del bolsillo.','error');
         distribution.push({pocketId,value:amount,name:pocket.name}); updateDistributionUI(); document.getElementById('modal-pocket-amount').value='';
+        const mps=document.getElementById('modal-pocket-select'); mps.value=''; mps.dispatchEvent(new Event('change',{bubbles:true}));
     });
 
     const updateDistributionUI=()=>{
@@ -1598,6 +1602,44 @@ const makeSelectSearchable = (selectId) => {
         else if(tx.type==='transfer'){const src=tx.sourceType==='account'?accounts.find(a=>a.id===tx.sourceId):pockets.find(p=>p.id===tx.sourceId);const dst=tx.destinationType==='account'?accounts.find(a=>a.id===tx.destinationId):pockets.find(p=>p.id===tx.destinationId);const isVirtual=tx.sourceType==='account'&&src&&src.type==='virtual'&&tx.destinationType==='pocket';if(src&&!isVirtual)src.balance-=v;if(dst)dst.balance+=v;}
     };
 
+    // ── Ventana de registro ──────────────────────────────────────────
+    const refreshRegisterList=(keepFilter=true)=>{
+        const sel=document.getElementById('register-month-filter'), prev=sel.value;
+        const txs=getTransactions(), accs=getAccounts(), pocks=getPockets();
+        populateMonthFilter('register-month-filter',txs,(f)=>renderTransactions('all-transactions-list',f,accs,pocks));
+        if(keepFilter&&prev&&sel.value!==prev&&[...sel.options].some(o=>o.value===prev)){sel.value=prev;sel.onchange();}
+    };
+    document.getElementById('tx-sort-order').addEventListener('change',(e)=>{
+        txSortDesc=e.target.value!=='asc';
+        const sel=document.getElementById('register-month-filter'); if(sel.onchange)sel.onchange();
+    });
+    const resetRegisterForm=()=>{
+        const form=document.getElementById('register-form'); form.reset();
+        document.getElementById('date').value=localTodayISO();
+        renderRegisterOptions(getAccounts(),getPockets());
+        document.getElementById('multi-pocket-data').value='';
+        document.getElementById('distribution-summary-display').classList.add('hidden');
+        document.getElementById('pocket-selector-wrapper').classList.remove('hidden');
+        document.getElementById('afecta-bolsillo').disabled=false; document.getElementById('afecta-cuenta').disabled=false;
+        document.getElementById('distribute-expense-btn').classList.toggle('hidden',document.getElementById('type').value!=='expense');
+        makeSelectSearchable('afecta-cuenta'); makeSelectSearchable('afecta-bolsillo');
+    };
+    window.openRegisterModal=()=>{
+        resetRegisterForm();
+        document.getElementById('register-modal').classList.remove('hidden');
+        document.body.style.overflow='hidden';
+        setTimeout(()=>document.getElementById('concept').focus(),50);
+    };
+    window.closeRegisterModal=()=>{
+        document.getElementById('register-modal').classList.add('hidden');
+        document.body.style.overflow='';
+    };
+    document.addEventListener('keydown',(e)=>{
+        if(e.key!=='Escape')return;
+        if(!document.getElementById('multi-pocket-modal').classList.contains('hidden'))return; // primero se cierra la distribución
+        if(!document.getElementById('register-modal').classList.contains('hidden'))closeRegisterModal();
+    });
+
     // ── Formulario Registro ───────────────────────────────────────────
     document.getElementById('register-form').addEventListener('submit',(e)=>{
         e.preventDefault();
@@ -1614,12 +1656,8 @@ const makeSelectSearchable = (selectId) => {
         if(newTx.pocketId){const p=pockets.find(p=>p.id===newTx.pocketId);if(p)newTx.finalPocketBalance=p.balance;}
         txs.push(newTx);
         _set('accounts',accounts); _set('pockets',pockets); _set('transactions',txs);
-        syncToFirebase(); loadData(); showMessage('Movimiento registrado con éxito.'); form.reset();
-        document.getElementById('date').value=new Date().toISOString().split('T')[0];
-        document.getElementById('distribution-summary-display').classList.add('hidden');
-        document.getElementById('pocket-selector-wrapper').classList.remove('hidden');
-        document.getElementById('distribute-expense-btn').classList.remove('hidden');
-        makeSelectSearchable('afecta-cuenta'); makeSelectSearchable('afecta-bolsillo');
+        syncToFirebase(); loadData(); showMessage('Movimiento registrado con éxito.');
+        closeRegisterModal(); refreshRegisterList();
     });
 
     // ════════════════════════════════════════════════════════════════
@@ -1646,7 +1684,7 @@ const makeSelectSearchable = (selectId) => {
             setFirebaseStatus('offline');
         }
 
-        document.getElementById('date').value=new Date().toISOString().split('T')[0];
+        document.getElementById('date').value=localTodayISO();
 
         // Historial inicial en memoria
         window._undoStack=[];
